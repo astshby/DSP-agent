@@ -82,3 +82,23 @@ test('FFT agrees with independent direct DFT, calibrated DC, Nyquist, sine and z
   assert.throws(()=>analyze(x,{nfft:33}),/2 的/);
   assert.throws(()=>analyze(x,{nfft:16}),/不少于/);
 });
+
+test('FIR and Butterworth coefficients and full outputs match independent SciPy fixtures', () => {
+  const reference=require('./fixtures/filters.json');
+  for(const c of reference.cases) {
+    const r=DSP.runAnalysis(task(reference.input,[c.operation],0,reference.fs)),design=r.analyses[0];
+    c.b.forEach((v,i)=>near(design.b[i],v,1e-12));c.a.forEach((v,i)=>near(design.a[i],v,1e-12));
+    c.output.forEach((v,i)=>near(r.signal.values[i],v,1e-11));
+    assert.deepEqual(DSP.runAnalysis(r.task),r);
+  }
+  assert.throws(()=>DSP.runAnalysis(task([1],[{type:'filter',family:'fir',response:'lowpass',cutoffHz:500,taps:31,window:'hamming'}])),/截止/);
+  assert.throws(()=>DSP.runAnalysis(task([1],[{type:'filter',family:'fir',response:'lowpass',cutoffHz:100,taps:30,window:'hamming'}])),/奇数/);
+});
+test('multitone and noise generation are deterministic and preserve normalized task settings', () => {
+  const input={kind:'generated',waveform:'multitone',sampleRateHz:32,count:32,n0:0,amplitude:1,offset:0,frequencyHz:2,phaseDeg:0,frequency2Hz:8,amplitude2:.5};
+  const r=DSP.runAnalysis({schemaVersion:1,input,operations:[]});near(r.signal.values[1],Math.sin(Math.PI/8)+.5);
+  for(const waveform of ['multitone','noise']) {
+    const r=DSP.runAnalysis({schemaVersion:1,input:{...input,waveform,seed:42},operations:[]});
+    assert.deepEqual(DSP.runAnalysis(r.task),r);
+  }
+});

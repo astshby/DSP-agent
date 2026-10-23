@@ -168,6 +168,14 @@
         op={type:'spectrum',method:request.method,window:request.window,nfft:number(request.nfft,'变换点数',{integer:true}),removeMean:request.removeMean===true};
         if(request.removeMean!==undefined&&typeof request.removeMean!=='boolean')throw new Error('去均值必须是布尔值。');
         analyses.push({type:'spectrum',...spectrum(signal,op)});
+      } else if (request.type === 'filter') {
+        op={type:'filter',family:request.family,response:request.response,cutoffHz:number(request.cutoffHz,'截止频率')};
+        if(op.family==='fir')Object.assign(op,{taps:number(request.taps,'抽头数',{integer:true}),window:request.window});
+        const design=designFilter(op,signal.sampleRateHz),before={...signal,values:[...signal.values]};
+        signal.values=difference(signal.values,design.b,design.a);
+        signal.label='数字滤波输出';signal.formula='零历史、因果滤波；保留与输入相同长度，尾部未延拓';
+        const config={method:'fft',window:'hann',nfft:2**Math.ceil(Math.log2(signal.values.length)),removeMean:false};
+        analyses.push({type:'filter',...design,before,after:{...signal,values:[...signal.values]},response:frequencyResponse(design.b,design.a),beforeSpectrum:spectrum(before,config),afterSpectrum:spectrum(signal,config)});
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -297,6 +305,33 @@
       coherentGain:gain/count,binSpacing:(signal.sampleRateHz??1)/nfft,recordSpacing:(signal.sampleRateHz??1)/count,
       frequencyUnit:signal.sampleRateHz===null?'cycles/sample':'Hz',peak:peak>1e-14?{frequency:frequency[peakIndex],amplitude:peak}:null};
   }
+  function designFilter(op,fs) {
+    if(fs===null)throw new Error('按 Hz 设计滤波器前必须设置采样率。');
+    if(!(op.cutoffHz>0&&op.cutoffHz<fs/2))throw new Error('截止频率必须在 0 与 fs/2 之间。');
+    if(!['lowpass','highpass'].includes(op.response))throw new Error('目前仅支持低通与高通。');
+    if(op.family==='fir') {
+      const n=op.taps;
+      if(!Number.isInteger(n)||n<3||n>129||n%2===0)throw new Error('FIR 抽头数必须为 3 到 129 的奇数。');
+      if(!['rectangular','hann','hamming'].includes(op.window))throw new Error('不支持的设计窗。');
+      const mid=(n-1)/2,fc=op.cutoffHz/fs;
+      let b=Array.from({length:n},(_,i)=>{
+        const t=i-mid,low=t===0?2*fc:Math.sin(2*Math.PI*fc*t)/(Math.PI*t);
+        const ideal=op.response==='lowpass'?low:(t===0?1:0)-low;
+        const w=op.window==='rectangular'?1:op.window==='hann'?.5-.5*Math.cos(2*Math.PI*i/(n-1)):.54-.46*Math.cos(2*Math.PI*i/(n-1));
+        return ideal*w;
+      });
+      const gain=b.reduce((sum,v,i)=>sum+v*Math.cos((op.response==='lowpass'?0:Math.PI)*(i-mid)),0);
+      if(Math.abs(gain)<1e-12)throw new Error('滤波器设计增益过小。');
+      b=b.map(v=>v/gain);
+      return {b,a:[1],family:'fir',delaySamples:mid};
+    }
+    if(op.family==='iir') {
+      const k=Math.tan(Math.PI*op.cutoffHz/fs),norm=1/(1+Math.SQRT2*k+k*k);
+      const b=op.response==='lowpass'?[k*k*norm,2*k*k*norm,k*k*norm]:[norm,-2*norm,norm];
+      return {b,a:[1,2*(k*k-1)*norm,(1-Math.SQRT2*k+k*k)*norm],family:'iir',delaySamples:null};
+    }
+    throw new Error('请选择 FIR 或二阶 Butterworth IIR。');
+  }
   // MATH_FUNCTIONS
 
   function runAnalysis(task) {
@@ -326,16 +361,30 @@
       const offset = number(input.offset, '直流偏置');
       const waveform = input.waveform;
       normalized = { kind: 'generated', waveform, sampleRateHz: fs, count, n0, amplitude, offset };
-      if (waveform === 'sine' || waveform === 'cosine') {
+      if (waveform === 'sine' || waveform === 'cosine' || waveform === 'multitone') {
         const frequencyHz = number(input.frequencyHz, '频率');
         const phaseDeg = number(input.phaseDeg, '相位');
         if (frequencyHz < 0) throw new Error('发生器频率不能小于 0 Hz。');
         Object.assign(normalized, { frequencyHz, phaseDeg });
-        const wave = waveform === 'sine' ? Math.sin : Math.cos;
+        const wave = waveform === 'cosine' ? Math.cos : Math.sin;
         values = Array.from({ length: count }, (_, i) => amplitude * wave(2 * Math.PI * frequencyHz * (n0 + i) / fs + phaseDeg * Math.PI / 180) + offset);
         label = waveform === 'sine' ? '正弦序列' : '余弦序列';
         formula = `x[n] = A · ${waveform === 'sine' ? 'sin' : 'cos'}(2π f n / fs + φ) + D`;
         if (frequencyHz >= fs / 2) warnings.push('频率达到或超过 fs/2：当前样值可能出现混叠或奈奎斯特点的特殊情况，请勿将图中变化直接视为原始频率。');
+        if(waveform==='multitone') {
+          const frequency2Hz=number(input.frequency2Hz,'第二频率'),amplitude2=number(input.amplitude2,'第二幅值');
+          if(frequency2Hz<0)throw new Error('第二频率不能小于 0。');
+          Object.assign(normalized,{frequency2Hz,amplitude2});
+          values=values.map((v,i)=>v+amplitude2*Math.sin(2*Math.PI*frequency2Hz*(n0+i)/fs));
+          label='双频叠加';formula='x[n] = A sin(2πfn/fs+φ) + A₂ sin(2πf₂n/fs) + D';
+          if(frequency2Hz>=fs/2)warnings.push('第二频率达到或超过奈奎斯特频率，可能混叠。');
+        }
+      } else if(waveform==='noise') {
+        const seed=number(input.seed,'随机种子',{integer:true});
+        if(seed<0||seed>4294967295)throw new Error('种子范围为 0 到 4294967295。');
+        normalized.seed=seed;let state=seed;
+        values=Array.from({length:count},()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return amplitude*(2*state/4294967296-1)+offset;});
+        label='可重复均匀噪声';formula='x[n] = A · U[−1,1) + D；固定种子的伪随机序列';
       } else if (waveform === 'impulse' || waveform === 'step') {
         const position = number(input.position, '发生位置', { integer: true });
         normalized.position = position;

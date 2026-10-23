@@ -5,7 +5,7 @@
   let lastResult = null;
   let lastPlotWidth = 0;
   const fields = { waveform: 'sine', frequency: 50, phase: 0, amplitude: 1, offset: 0,
-    'sample-rate': 1000, 'sample-count': 64, 'start-index': 0, position: 0, sequence: '1, 2, 1' };
+    'sample-rate': 1000, 'sample-count': 64, 'start-index': 0, position: 0, frequency2:300, amplitude2:0.5, 'noise-seed':42, sequence: '1, 2, 1' };
   const format = value => value === 0 ? '0' : Number(value.toPrecision(6)).toString();
   const source = () => form.elements.source.value;
 
@@ -14,9 +14,11 @@
     $('generated-fields').hidden = manual;
     $('manual-fields').hidden = !manual;
     $('count-field').hidden = manual;
-    const periodic = ['sine', 'cosine'].includes($('waveform').value);
+    const periodic = ['sine', 'cosine', 'multitone'].includes($('waveform').value);
     $('periodic-fields').hidden = !periodic;
-    $('position-field').hidden = periodic;
+    $('position-field').hidden = !['impulse','step'].includes($('waveform').value);
+    $('second-tone').hidden = $('waveform').value !== 'multitone';
+    $('noise-fields').hidden = $('waveform').value !== 'noise';
     $('run-button').textContent = manual ? '读取并绘图 →' : '生成并绘图 →';
     $('sampling-help').textContent = manual
       ? '采样率可留空，按下标查看；最多 4096 个样值。'
@@ -28,7 +30,7 @@
     if (input.kind === 'manual') input.text = $('sequence').value;
     else Object.assign(input, {
       waveform: $('waveform').value, frequencyHz: $('frequency').value, phaseDeg: $('phase').value,
-      amplitude: $('amplitude').value, offset: $('offset').value, count: $('sample-count').value, position: $('position').value,
+      amplitude: $('amplitude').value, offset: $('offset').value, count: $('sample-count').value, position: $('position').value, frequency2Hz:$('frequency2').value, amplitude2:$('amplitude2').value, seed:$('noise-seed').value,
     });
     return { schemaVersion: 1, input, operations: Workbench.readOperations() };
   }
@@ -88,6 +90,8 @@
     for (const [key, value] of Object.entries(display)) $(`metric-${key}`).textContent = value;
     $('formula').textContent = signal.formula;
     const explanations = {
+      multitone: '两个正弦分量叠加，可以比较低通前后的波形与频谱。',
+      noise: '固定种子得到可重复的均匀伪随机序列；改变首项下标只移动这一段样值。',
       sine: '观察圆点的位置：每个点都是对正弦信号的一次采样。增大频率，或减小采样率，比较相邻样值的变化。',
       cosine: '余弦与正弦可以通过相位联系起来。试着修改相位，并观察 n = 0 附近的样值。',
       impulse: '当 A = 1、D = 0 时，只有 n = k 的样值等于 1，其余为 0。这是移位后的单位脉冲。',
@@ -157,7 +161,7 @@
       form.elements.source.value = input.kind;
       $('start-index').value = input.n0; $('sample-rate').value = input.sampleRateHz ?? '';
       if (input.kind === 'manual') $('sequence').value = input.values.join(', ');
-      else for (const [key, id] of Object.entries({waveform:'waveform',frequencyHz:'frequency',phaseDeg:'phase',amplitude:'amplitude',offset:'offset',count:'sample-count',position:'position'})) {
+      else for (const [key, id] of Object.entries({waveform:'waveform',frequencyHz:'frequency',phaseDeg:'phase',amplitude:'amplitude',offset:'offset',count:'sample-count',position:'position',frequency2Hz:'frequency2',amplitude2:'amplitude2',seed:'noise-seed'})) {
         if (input[key] !== undefined) $(id).value = input[key];
       }
       Workbench.loadOperations(result.task.operations);

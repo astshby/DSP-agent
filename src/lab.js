@@ -20,6 +20,7 @@ const Workbench = (() => {
     <label>典型 X(z)=1/(1−p z⁻¹) 的实极点 p<input id="z-pole" type="number" value="0.5" step="any"></label><label>选择 ROC / 序列方向<select id="z-side"><option value="right">右边：|z| &gt; |p|</option><option value="left">左边：|z| &lt; |p|</option></select></label><button type="button" id="add-inverse">显示典型逆 z 变换</button>
     <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
     <details><summary>DFT / FFT 与频谱</summary><div class="field-pair"><label>算法<select id="spectrum-method"><option value="fft">FFT（基 2）</option><option value="dft">直接 DFT</option></select></label><label>变换点数<input id="spectrum-nfft" type="number" value="256" min="1" max="4096"></label></div><label>分析窗<select id="spectrum-window"><option value="rectangular">矩形窗</option><option value="hann">周期 Hann</option><option value="hamming">周期 Hamming</option></select></label><label class="check-label"><input id="spectrum-mean" type="checkbox"> 先去均值</label><button type="button" id="add-spectrum">分析当前单边频谱</button><p class="field-help">FFT 点数为 2 的幂；可补零，不截断数据。幅度按窗相干增益标定，DC 和奈奎斯特不加倍。</p></details>
+    <details><summary>FIR / Butterworth IIR 设计</summary><label>实现<select id="filter-family"><option value="fir">FIR 窗函数法</option><option value="iir">二阶 Butterworth IIR</option></select></label><label>响应<select id="filter-response"><option value="lowpass">低通</option><option value="highpass">高通</option></select></label><label>截止频率 / Hz<input id="filter-cutoff" type="number" value="100" step="any"></label><label>FIR 抽头数（奇数）<input id="filter-taps" type="number" value="51" min="3" max="129" step="2"></label><label>FIR 设计窗<select id="filter-window"><option value="hamming">对称 Hamming</option><option value="hann">对称 Hann</option><option value="rectangular">矩形窗</option></select></label><button type="button" id="add-filter">设计并滤波</button><button type="button" id="dual-demo">载入双频低通实验</button><p class="field-help">FIR 截止处约 −6 dB，Butterworth 截止处 −3 dB；两者的截止定义不同。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -69,6 +70,8 @@ const Workbench = (() => {
     action('add-inverse', () => add({type:'inverse_z',pole:number('z-pole'),side:number('z-side')}));
     action('add-zvalue', () => add({type:'zvalue',radius:number('z-radius'),angleDeg:number('z-angle')}));
     action('add-spectrum', () => add({type:'spectrum',method:number('spectrum-method'),window:number('spectrum-window'),nfft:number('spectrum-nfft'),removeMean:$('spectrum-mean').checked}));
+    action('add-filter', () => add({type:'filter',family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')}));
+    action('dual-demo', () => api.runTask({schemaVersion:1,input:{kind:'generated',waveform:'multitone',sampleRateHz:1024,count:512,n0:0,frequencyHz:50,amplitude:1,phaseDeg:0,offset:0,frequency2Hz:300,amplitude2:.5},operations:[{type:'filter',family:'fir',response:'lowpass',cutoffHz:100,taps:51,window:'hamming'}]}));
     // EXTRA_ACTIONS
   }
 
@@ -82,15 +85,17 @@ const Workbench = (() => {
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 300 270');svg.style.maxHeight='270px';svg.setAttribute('role','img');svg.setAttribute('aria-label','零极点图：圆圈为零点，叉号为极点，虚线为单位圆');svg.innerHTML=parts.join('');analyses.append(svg);
     table(['类型','实部','虚部'],[...item.zeros.map(p=>['零点',p.real,p.imag]),...item.poles.map(p=>['极点',p.real,p.imag])]);
   }
-  function chart(xs,ys,xLabel,yLabel) {
-    const finite=ys.filter(v=>v!==null&&Number.isFinite(v));
+  function chart(xs,ys,xLabel,yLabel,comparison=null) {
+    const finite=[...ys,...(comparison??[])].filter(v=>v!==null&&Number.isFinite(v));
     if (!finite.length) {analyses.append(node('p','当前频率点无有限响应。'));return;}
     const lo=Math.min(0,...finite), hi=Math.max(0,...finite), span=hi-lo||1;
     const x=i=>48+500*i/Math.max(1,xs.length-1),y=v=>22+140*(hi-v)/span;
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 590 205');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${yLabel} 对 ${xLabel}`);
     let drawing='',active=false;
     ys.forEach((v,i)=>{if(v===null||!Number.isFinite(v)){active=false;return;}drawing+=`${active?'L':'M'}${x(i)},${y(v)} `;active=true;});
-    const parts=[`<path d="${drawing}" fill="none" stroke="#287d76" stroke-width="1.8"/>`];
+    const parts=[];
+    if(comparison)parts.push(`<path d="${comparison.map((v,i)=>`${i?'L':'M'}${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="#b37735" stroke-dasharray="4 3" stroke-width="1.4"/>`);
+    parts.push(`<path d="${drawing}" fill="none" stroke="#287d76" stroke-width="1.8"/>`);
     [0,.5,1].forEach(f=>{const i=Math.round((xs.length-1)*f);parts.push(`<text x="${x(i)}" y="184" text-anchor="middle" font-size="12" fill="#52677c">${Number(xs[i].toPrecision(5))}</text>`);});
     for(const [v,yy] of [[hi,22],[lo,162]])parts.push(`<text x="43" y="${yy}" text-anchor="end" font-size="11" fill="#52677c">${Number(v.toPrecision(3))}</text>`);
     svg.innerHTML=parts.join('');analyses.append(node('p',`${yLabel} · ${xLabel}`),svg);
@@ -142,6 +147,15 @@ const Workbench = (() => {
       chart(item.frequency,item.amplitude,item.frequencyUnit,'幅度');
       chart(item.frequency,item.phase,item.frequencyUnit,'相位 / rad');
       analyses.append(node('p',`最高频点：${item.peak?`${item.peak.frequency.toPrecision(6)} ${item.frequencyUnit}，幅度 ${item.peak.amplitude.toPrecision(6)}`:'无显著非零幅度'}。频点间隔 ${item.binSpacing.toPrecision(5)}，原始记录 fs/N=${item.recordSpacing.toPrecision(5)} ${item.frequencyUnit}；窗相干增益 ${item.coherentGain.toPrecision(5)}。补零仅加密频点，实际分辨能力仍受记录时长与窗主瓣影响。非整周期、靠近 DC/奈奎斯特或相邻频率干涉时，峰值幅度可能有偏差。`));
+    }
+    for(const item of result.analyses.filter(item=>item.type==='filter')) {
+      analyses.append(node('h3',`${item.family.toUpperCase()} · 滤波前后`));
+      chart(item.after.values.map((_,i)=>item.after.n0+i),item.after.values,'n','时域：绿色输出 / 橙色虚线输入',item.before.values);
+      chart(item.afterSpectrum.frequency,item.afterSpectrum.amplitude,'Hz','频谱：绿色输出 / 橙色虚线输入',item.beforeSpectrum.amplitude);
+      chart(item.response.omega.map(w=>w/Math.PI),item.response.magnitude,'ω / π','滤波器幅频响应');
+      analyses.append(node('p',item.delaySamples===null?'IIR 为非线性相位，群延迟随频率变化；不要把输入输出逐点相减当作误差。':'FIR 线性相位，通带群延迟 '+item.delaySamples+' 个样点。图中保留实际延迟，没有平移输出。'));
+      analyses.append(node('p','从零历史开始滤波，初始段包含瞬态；输出与输入等长，末尾尚未衰减的响应不额外输出。频谱对照使用周期 Hann 窗和窗增益修正。'));
+      const detail=document.createElement('details');detail.append(node('summary','查看滤波器系数'),node('pre',JSON.stringify({b:item.b,a:item.a},null,2)));analyses.append(detail);
     }
     // EXTRA_RENDER
   }
