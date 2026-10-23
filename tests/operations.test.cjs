@@ -102,3 +102,8 @@ test('multitone and noise generation are deterministic and preserve normalized t
     assert.deepEqual(DSP.runAnalysis(r.task),r);
   }
 });
+
+test('cross-runtime comparison tolerates rounding and phase branches, rejects structural or numerical errors',()=>{
+  assert.equal(DSP.compareResults({values:[1,0],phase:[Math.PI,null]},{values:[1+Number.EPSILON,1e-16],phase:[-Math.PI,null]}).equal,true);
+  for(const [a,b] of [[{x:[1]},{x:[1,2]}],[{x:1},{x:1.01}],[{x:null},{x:0}],[{x:Infinity},{x:Infinity}]])assert.equal(DSP.compareResults(a,b).equal,false);
+});

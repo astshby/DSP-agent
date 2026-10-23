@@ -65,7 +65,7 @@ def main():
                 if stage>=9:
                     page.locator('#reset-button').click()
                     page.locator('#assistant-text').fill('低通 100 Hz');page.locator('#assistant-prepare').click()
-                    assert 'cutoffHz' in page.locator('#assistant-plan').inner_text()
+                    assert '截止 100 Hz' in page.locator('#assistant-plan').inner_text()
                     assert page.locator('#operation-list li').count()==0
                     page.locator('#assistant-execute').click()
                     assert page.locator('#operation-list li').count()==1

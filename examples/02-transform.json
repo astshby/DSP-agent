@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "input": {
+    "kind": "manual",
+    "values": [
+      1,
+      2,
+      3
+    ],
+    "n0": -1,
+    "sampleRateHz": 1000
+  },
+  "operations": [
+    {
+      "type": "transform",
+      "gain": 2,
+      "shift": 4,
+      "reverse": true
+    }
+  ]
+}

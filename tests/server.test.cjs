@@ -1,0 +1,23 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {createServer}=require('../server/index.cjs');
+test('local HTTP serves the app, runs tool workflow and rejects cross-origin or invalid requests',async(t)=>{
+  const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections();}));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const post=(url,data,headers={})=>fetch(base+url,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
+  assert.equal((await fetch(base)).status,200);
+  assert.equal((await fetch(base+'/api/health').then(r=>r.json())).cloudProvidersEnabled,false);
+  assert.equal((await fetch(base+'/api/tools').then(r=>r.json())).tools.length,2);
+  assert.equal((await fetch(base+'/.git/config')).status,404);
+  assert.equal((await fetch(base+'/api/health',{headers:{Origin:'https://example.org'}})).status,403);
+  const stored=await post('/api/signals',{input:{kind:'manual',values:[1,2,1],n0:-1,sampleRateHz:1000}}).then(r=>r.json());
+  const response=await post('/api/agent/runs',{mode:'mock',signalId:stored.signalId,operations:[{type:'convolve',kernel:[1,1],n0:0}]});
+  assert.equal(response.status,200);const run=await response.json();
+  const result=await fetch(base+'/api/results/'+run.resultId).then(r=>r.json());assert.deepEqual(result.signal.values,[1,3,3,1]);assert.equal(result.signal.n0,-1);
+  assert.equal((await post('/api/agent/runs',{mode:'openai'})).status,400);
+  assert.equal((await post('/api/tools/call',{name:'run_analysis',arguments:{signalId:stored.signalId,operations:[{type:'unknown'}]}})).status,400);
+  assert.equal((await post('/api/signals',{}, {'Content-Type':'text/plain'})).status,415);
+  assert.equal((await post('/api/signals',{blob:'x'.repeat(1024*1024)})).status,413);
+  assert.equal((await post('/api/signals',{input:{kind:'manual',values:[],n0:0,sampleRateHz:10}})).status,400);
+});

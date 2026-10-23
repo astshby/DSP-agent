@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "input": {
+    "kind": "generated",
+    "waveform": "sine",
+    "sampleRateHz": 32,
+    "count": 32,
+    "n0": 0,
+    "amplitude": 2,
+    "offset": 0.25,
+    "frequencyHz": 4,
+    "phaseDeg": 0
+  },
+  "operations": [
+    {
+      "type": "spectrum",
+      "method": "fft",
+      "window": "rectangular",
+      "nfft": 32,
+      "removeMean": false
+    },
+    {
+      "type": "spectrum",
+      "method": "dft",
+      "window": "rectangular",
+      "nfft": 32,
+      "removeMean": false
+    }
+  ]
+}

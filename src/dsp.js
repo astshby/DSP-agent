@@ -334,6 +334,26 @@
   }
   // MATH_FUNCTIONS
 
+  // Cross-runtime libm may differ by a few ULPs. Compare numerical results,
+  // treating principal phases modulo 2π and retaining structural checks.
+  function compareResults(actual,expected) {
+    let maxAbsoluteError=0;
+    function equal(a,b,key='') {
+      if(typeof a==='number'||typeof b==='number') {
+        if(typeof a!=='number'||typeof b!=='number'||!Number.isFinite(a)||!Number.isFinite(b))return false;
+        let delta=Math.abs(a-b);
+        if(key==='phase')delta=Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+        maxAbsoluteError=Math.max(maxAbsoluteError,delta);
+        return delta<=1e-10*Math.max(1,Math.abs(a),Math.abs(b));
+      }
+      if(a===null||b===null||typeof a!=='object'||typeof b!=='object')return a===b;
+      if(Array.isArray(a)!==Array.isArray(b))return false;
+      const keys=Object.keys(a);
+      return keys.length===Object.keys(b).length&&keys.every(k=>Object.hasOwn(b,k)&&equal(a[k],b[k],Array.isArray(a)?key:k));
+    }
+    const matches=equal(actual,expected);return {equal:matches,maxAbsoluteError};
+  }
+
   function runAnalysis(task) {
     if (!task || task.schemaVersion !== 1 || !task.input) throw new Error('不支持的任务格式。');
     if (!Array.isArray(task.operations) || task.operations.length > 8) {
@@ -410,5 +430,5 @@
       metrics: statistics(processed.signal.values), warnings,
     };
   }
-  return Object.freeze({ MAX_SAMPLES, parseSequence, parseCSV, runAnalysis });
+  return Object.freeze({ MAX_SAMPLES, parseSequence, parseCSV, runAnalysis, compareResults });
 });

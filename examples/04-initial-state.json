@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "input": {
+    "kind": "manual",
+    "values": [
+      1,
+      1,
+      1
+    ],
+    "n0": 0,
+    "sampleRateHz": 1000
+  },
+  "operations": [
+    {
+      "type": "difference",
+      "b": [
+        1
+      ],
+      "a": [
+        1,
+        -0.5
+      ],
+      "xHistory": [],
+      "yHistory": [
+        2
+      ],
+      "tail": 0
+    }
+  ]
+}

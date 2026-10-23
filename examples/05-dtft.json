@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "input": {
+    "kind": "manual",
+    "values": [
+      1,
+      2,
+      1
+    ],
+    "n0": -2,
+    "sampleRateHz": 1000
+  },
+  "operations": [
+    {
+      "type": "convolve",
+      "kernel": [
+        0.5,
+        0.5
+      ],
+      "n0": -1
+    },
+    {
+      "type": "dtft"
+    }
+  ]
+}

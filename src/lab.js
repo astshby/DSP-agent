@@ -2,7 +2,7 @@
 const Workbench = (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  let api, operations = [];
+  let api, operations = [], pendingPlan = null;
   const number = id => $(id).value;
   const node = (tag, text, className) => {
     const e = document.createElement(tag); e.textContent = text;
@@ -21,6 +21,7 @@ const Workbench = (() => {
     <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
     <details><summary>DFT / FFT 与频谱</summary><div class="field-pair"><label>算法<select id="spectrum-method"><option value="fft">FFT（基 2）</option><option value="dft">直接 DFT</option></select></label><label>变换点数<input id="spectrum-nfft" type="number" value="256" min="1" max="4096"></label></div><label>分析窗<select id="spectrum-window"><option value="rectangular">矩形窗</option><option value="hann">周期 Hann</option><option value="hamming">周期 Hamming</option></select></label><label class="check-label"><input id="spectrum-mean" type="checkbox"> 先去均值</label><button type="button" id="add-spectrum">分析当前单边频谱</button><p class="field-help">FFT 点数为 2 的幂；可补零，不截断数据。幅度按窗相干增益标定，DC 和奈奎斯特不加倍。</p></details>
     <details><summary>FIR / Butterworth IIR 设计</summary><label>实现<select id="filter-family"><option value="fir">FIR 窗函数法</option><option value="iir">二阶 Butterworth IIR</option></select></label><label>响应<select id="filter-response"><option value="lowpass">低通</option><option value="highpass">高通</option></select></label><label>截止频率 / Hz<input id="filter-cutoff" type="number" value="100" step="any"></label><label>FIR 抽头数（奇数）<input id="filter-taps" type="number" value="51" min="3" max="129" step="2"></label><label>FIR 设计窗<select id="filter-window"><option value="hamming">对称 Hamming</option><option value="hann">对称 Hann</option><option value="rectangular">矩形窗</option></select></label><button type="button" id="add-filter">设计并滤波</button><button type="button" id="dual-demo">载入双频低通实验</button><p class="field-help">FIR 截止处约 −6 dB，Butterworth 截止处 −3 dB；两者的截止定义不同。</p></details>
+    <details><summary>保存、复现与本地服务</summary><button type="button" id="export-task">下载任务 JSON</button><button type="button" id="export-original">下载原始 CSV</button><button type="button" id="export-output">下载输出 CSV</button><button type="button" id="export-report">下载实验报告</button><label>恢复任务 JSON<input id="task-file" type="file" accept=".json,application/json"></label><button type="button" id="import-task">导入并复现</button><button type="button" id="local-check">本地工具自检</button><p id="local-service-note" class="field-help">双击模式使用全部离线功能。运行 npm start 后在本地网页使用工具自检；本版尚未接入云端模型。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -35,9 +36,28 @@ const Workbench = (() => {
   $('manual-fields').after(csv);
   const analyses = document.createElement('article'); analyses.className = 'card analysis-card'; analyses.id = 'analyses';
   document.querySelector('.task-details').before(analyses);
+  const assistant=document.createElement('section');assistant.className='card analysis-card';
+  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持固定命令及单位；不会联网或调用大模型。先预览参数，再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="低通 100 Hz 然后分析频谱"></textarea><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan">${RuleAssistant.help}</pre>`;
+  document.querySelector('.results').append(assistant);
 
+  function describeOperation(op) {
+    const list=values=>values.slice(0,8).join(', ')+(values.length>8?' …':'');
+    switch(op.type) {
+      case 'transform':return `${op.reverse?'反折 → ':''}移位 ${op.shift} → 增益 ${op.gain}`;
+      case 'convolve':return `卷积：h=[${list(op.kernel)}]，n₀=${op.n0}`;
+      case 'difference':return `差分方程：b=[${list(op.b)}]，a=[${list(op.a)}]，尾部补零 ${op.tail} 项`;
+      case 'dtft':return '当前序列 DTFT（257 个频率点）';
+      case 'response':return `系统响应：b=[${list(op.b)}]，a=[${list(op.a)}]`;
+      case 'zplane':return `零极点：b=[${list(op.b)}]，a=[${list(op.a)}]`;
+      case 'inverse_z':return `典型逆 z：p=${op.pole}，${op.side==='right'?'右边':'左边'}序列`;
+      case 'zvalue':return `z 求值：模 ${op.radius}，辐角 ${op.angleDeg}°`;
+      case 'spectrum':return `${op.method.toUpperCase()}：${op.nfft} 点，${op.window} 窗${op.removeMean?'，先去均值':''}`;
+      case 'filter':return `${op.family.toUpperCase()} ${op.response==='lowpass'?'低通':'高通'}：截止 ${op.cutoffHz} Hz${op.family==='fir'?`，${op.taps} 抽头，${op.window} 窗`:'，二阶 Butterworth'}`;
+      default:return op.type;
+    }
+  }
   function list() {
-    $('operation-list').replaceChildren(...operations.map(op => node('li', JSON.stringify(op))));
+    $('operation-list').replaceChildren(...operations.map(op => node('li', describeOperation(op))));
   }
   function add(op) {
     if (operations.length >= 8) throw new Error('最多 8 个处理步骤，请先清空。');
@@ -72,6 +92,44 @@ const Workbench = (() => {
     action('add-spectrum', () => add({type:'spectrum',method:number('spectrum-method'),window:number('spectrum-window'),nfft:number('spectrum-nfft'),removeMean:$('spectrum-mean').checked}));
     action('add-filter', () => add({type:'filter',family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')}));
     action('dual-demo', () => api.runTask({schemaVersion:1,input:{kind:'generated',waveform:'multitone',sampleRateHz:1024,count:512,n0:0,frequencyHz:50,amplitude:1,phaseDeg:0,offset:0,frequency2Hz:300,amplitude2:.5},operations:[{type:'filter',family:'fir',response:'lowpass',cutoffHz:100,taps:51,window:'hamming'}]}));
+    action('export-task', () => download('dsp-task.json',JSON.stringify(api.getResult().task,null,2),'application/json'));
+    const csvText=signal=>`${signal.sampleRateHz===null?'n,value':'n,time_s,value'}\n`+signal.values.map((v,i)=>[signal.n0+i,...(signal.sampleRateHz===null?[]:[(signal.n0+i)/signal.sampleRateHz]),v].join(',')).join('\n')+'\n';
+    action('export-original', () => download('dsp-original.csv',csvText(api.getResult().original),'text/csv'));
+    action('export-output', () => download('dsp-output.csv',csvText(api.getResult().signal),'text/csv'));
+    action('export-report', () => {
+      const r=api.getResult();
+      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
+    });
+    action('import-task', async () => {
+      const file=$('task-file').files[0];if(!file)throw new Error('请选择任务 JSON。');
+      if(file.size>1024*1024)throw new Error('任务文件不能超过 1 MiB。');
+      api.runTask(JSON.parse(await file.text()));
+    });
+    action('assistant-prepare', () => {
+      pendingPlan=RuleAssistant.plan($('assistant-text').value,api.readTask());
+      $('assistant-plan').textContent=pendingPlan.message+(pendingPlan.task?'\n'+pendingPlan.task.operations.map((op,i)=>`${i+1}. ${describeOperation(op)}`).join('\n'):'');
+      $('assistant-execute').disabled=pendingPlan.status!=='ready';
+    });
+    action('assistant-execute', () => {if(pendingPlan?.status==='ready')api.runTask(pendingPlan.task);});
+    const invalidate=()=>{if(pendingPlan){pendingPlan=null;$('assistant-execute').disabled=true;$('assistant-plan').textContent='参数或命令已修改，请重新解析预览。';}};
+    $('assistant-text').addEventListener('input',invalidate);
+    $('signal-form').addEventListener('input',invalidate);
+    action('local-check', async () => {
+      if(!['http:','https:'].includes(location.protocol))throw new Error('请先在项目目录运行 npm start，再打开 http://127.0.0.1:8787 使用本地工具。');
+      const originalTask=api.getResult().task;
+      const post=async(path,body)=>{
+        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});
+        const data=await response.json();if(!response.ok)throw new Error(data.error?.message||'本地服务调用失败');return data;
+      };
+      const stored=await post('/api/signals',{input:originalTask.input});
+      const run=await post('/api/agent/runs',{mode:'mock',signalId:stored.signalId,operations:originalTask.operations});
+      const response=await fetch('/api/results/'+encodeURIComponent(run.resultId));
+      if(!response.ok)throw new Error('本地结果读取失败。');
+      const remote=await response.json(),local=DSP.runAnalysis(originalTask);
+      const comparison=DSP.compareResults(remote,local);
+      if(!comparison.equal)throw new Error('本地工具与页面结果超出数值容差。');
+      $('local-service-note').textContent=`本地模拟工具调用完成：${run.trace.map(t=>t.name).join(' → ')}。${remote.signal.values.length} 项输出及分析与网页在 1e−10 相对/绝对容差内一致（最大绝对误差 ${comparison.maxAbsoluteError.toExponential(2)}）。未调用云模型，未使用 API Key。`;
+    });
     // EXTRA_ACTIONS
   }
 
@@ -106,7 +164,14 @@ const Workbench = (() => {
     rows.forEach(row=>{const tr=document.createElement('tr'); row.forEach(v=>tr.append(node('td',typeof v==='number'? Number(v.toPrecision(6)):v)));table.append(tr);});
     const wrap=document.createElement('div'); wrap.className='analysis-scroll';wrap.append(table);analyses.append(wrap);
   }
+  function download(name,content,type) {
+    const url=URL.createObjectURL(new Blob([content],{type:type+';charset=utf-8'}));
+    const link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   function render(result) {
+    if(pendingPlan)$('assistant-plan').textContent='结果已更新；再次执行前请重新解析预览。';
+    pendingPlan=null;
+    if($('assistant-execute'))$('assistant-execute').disabled=true;
     analyses.replaceChildren(node('h2', '实验读数'));
     const source = result.task.input;
     if (source.frequencyHz !== undefined) {

@@ -684,3 +684,8 @@ pre {
 .analysis-card table { width: 100%; font-size: 12px; border-collapse: collapse; }
 .analysis-card td, .analysis-card th { padding: 6px; text-align: left; border-bottom: 1px solid #e1e8ef; overflow-wrap: anywhere; }
 .analysis-scroll { overflow-x: auto; }
+#assistant-text { width: 100%; margin: 10px 0; border: 1px solid #c9d5e2; border-radius: 8px; padding: 10px; resize: vertical; font: inherit; font-size: 13px; }
+.assistant-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#assistant-plan { max-height: 300px; overflow: auto; }
+.results > .analysis-card { grid-column: 1 / -1; }

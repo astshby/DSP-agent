@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "input": {
+    "kind": "generated",
+    "waveform": "multitone",
+    "sampleRateHz": 1024,
+    "count": 512,
+    "n0": 0,
+    "amplitude": 1,
+    "offset": 0,
+    "frequencyHz": 50,
+    "phaseDeg": 0,
+    "frequency2Hz": 300,
+    "amplitude2": 0.5
+  },
+  "operations": [
+    {
+      "type": "filter",
+      "family": "fir",
+      "response": "lowpass",
+      "cutoffHz": 100,
+      "taps": 51,
+      "window": "hamming"
+    }
+  ]
+}
