@@ -14,6 +14,7 @@ const Workbench = (() => {
     <details open><summary>序列变换</summary><div class="field-pair"><label>增益<input id="op-gain" type="number" value="1" step="any"></label><label>移位 k<input id="op-shift" type="number" value="0" step="1"></label></div>
     <label class="check-label"><input id="op-reverse" type="checkbox"> 先反折，再移位</label><button type="button" id="add-transform">加入变换</button></details>
     <details><summary>线性卷积 / FIR 系统</summary><label>冲激响应 h[n]<input id="conv-kernel" value="1, 1, 1"></label><label>h 的首项下标<input id="conv-n0" type="number" value="0" step="1"></label><button type="button" id="add-convolve">加入线性卷积</button><p class="field-help">观察单位脉冲与阶跃输入的输出；卷积保留完整尾部。有限窗口外按零处理。</p></details>
+    <details><summary>差分方程与初始条件</summary><label>分子 b₀, b₁, …<input id="diff-b" value="1"></label><label>分母 a₀, a₁, …<input id="diff-a" value="1, -0.5"></label><label>输入历史 x[n₀−1], x[n₀−2], …<input id="diff-x" placeholder="留空表示零"></label><label>输出历史 y[n₀−1], y[n₀−2], …<input id="diff-y" placeholder="留空表示零"></label><label>末尾补零项数<input id="diff-tail" type="number" min="0" value="0"></label><button type="button" id="add-difference">加入差分系统</button><p class="field-help">系数按延迟 z⁻¹ 升幂排列；这是按历史值向前递推的因果实现。零输入响应包含窗口前输入历史的贡献。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -56,9 +57,16 @@ const Workbench = (() => {
       if (parsed.timeStart !== null) api.status(`已导入 ${parsed.values.length} 项，fs = ${parsed.sampleRateHz} Hz。原时间首项 ${parsed.timeStart} s 已平移至 0 s。`, 'warning');
     });
     action('add-convolve', () => add({type:'convolve',kernel:number('conv-kernel'),n0:number('conv-n0')}));
+    action('add-difference', () => add({type:'difference',b:number('diff-b'),a:number('diff-a'),xHistory:number('diff-x'),yHistory:number('diff-y'),tail:number('diff-tail')}));
     // EXTRA_ACTIONS
   }
 
+  function table(headings, rows) {
+    const table = document.createElement('table'); const head = document.createElement('tr');
+    headings.forEach(h=>head.append(node('th',h))); table.append(head);
+    rows.forEach(row=>{const tr=document.createElement('tr'); row.forEach(v=>tr.append(node('td',typeof v==='number'? Number(v.toPrecision(6)):v)));table.append(tr);});
+    const wrap=document.createElement('div'); wrap.className='analysis-scroll';wrap.append(table);analyses.append(wrap);
+  }
   function render(result) {
     analyses.replaceChildren(node('h2', '实验读数'));
     const source = result.task.input;
@@ -71,6 +79,12 @@ const Workbench = (() => {
     }
     analyses.append(node('p', `当前有限窗口能量：${result.metrics.energy.toPrecision(6)}。这不是无限周期信号的总能量；无限非零周期信号通常总能量发散。`));
     if (result.steps.length) analyses.append(node('p', `原始 ${result.original.values.length} 项 → ${result.steps.length} 个操作 → 当前 ${result.signal.values.length} 项；上方时域图与摘要显示最终输出。`));
+    for (const item of result.analyses.filter(item=>item.type==='difference')) {
+      analyses.append(node('h3','零状态 + 零输入 = 全响应'));
+      const rows = item.zeroState.slice(0,8).map((v,i)=>[result.original.n0+i,v,item.zeroInput[i],v+item.zeroInput[i]]);
+      table(['相对窗口下标','零状态','零输入','全响应'],rows);
+      analyses.append(node('p',`零历史冲激响应前 8 项：${item.impulse.slice(0,8).join(', ')}；阶跃响应前 8 项：${item.step.slice(0,8).join(', ')}。仅观察 32 项，有限窗口有界不代表 BIBO 稳定。`));
+    }
     // EXTRA_RENDER
   }
   return {connect, render, readOperations:() => operations, reset:() => {operations=[];list();}, loadOperations:ops => {operations=ops;list();}};

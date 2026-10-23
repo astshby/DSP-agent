@@ -26,3 +26,16 @@ test('linear convolution values, length, support, identity and commutativity', (
   assert.deepEqual(conv([1,1,1,1],[.5,.5]).signal.values,[.5,1,1,1,.5]);
   assert.throws(()=>conv(Array(4096).fill(0),[1,1]),/4096/);
 });
+
+test('difference equation normalizes a0 and decomposes zero state plus zero input', () => {
+  const run=(x,more={})=>DSP.runAnalysis(task(x,[{type:'difference',b:[2],a:[2,-1],...more}]));
+  assert.deepEqual(run([1,0,0,0]).signal.values,[1,.5,.25,.125]);
+  const r=run([1,1,1],{yHistory:[2]});
+  assert.deepEqual(r.signal.values,[2,2,2]);
+  r.signal.values.forEach((v,i)=>near(v,r.analyses[0].zeroState[i]+r.analyses[0].zeroInput[i]));
+  assert.deepEqual(run([0],{b:[1,1],a:[1],xHistory:[3],tail:2}).signal.values,[3,0,0]);
+  assert.deepEqual(DSP.runAnalysis(r.task),r);
+  assert.throws(()=>run([1],{a:[0]}),/a₀/);
+  assert.throws(()=>run([1],{yHistory:[1,2]}),/历史/);
+  assert.throws(()=>run(Array(1024).fill(1),{a:[1,-10]}),/溢出/);
+});

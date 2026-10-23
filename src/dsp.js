@@ -121,6 +121,17 @@
         op = {type:'convolve', kernel:array(request.kernel, '冲激响应'), n0:number(request.n0, '响应首项下标', {integer:true})};
         signal.values = convolution(signal.values, op.kernel);
         signal.n0 += op.n0; signal.label = '线性卷积输出'; signal.formula = 'y[n] = Σ x[k] h[n − k]；输入与 h 在窗口外按零处理';
+      } else if (request.type === 'difference') {
+        op = {type:'difference', ...coefficients(request.b,request.a), xHistory:history(request.xHistory), yHistory:history(request.yHistory), tail:number(request.tail ?? 0,'补零尾部', {integer:true})};
+        if (op.tail < 0 || signal.values.length + op.tail > MAX_SAMPLES) throw new Error('补零尾部必须非负且总长度不能超过 4096。');
+        if (op.xHistory.length > op.b.length - 1 || op.yHistory.length > op.a.length - 1) throw new Error('历史值数量不能超过相应差分阶数。');
+        const x = [...signal.values,...Array(op.tail).fill(0)];
+        const zeroState = difference(x,op.b,op.a,[],[]);
+        const zeroInput = difference(Array(x.length).fill(0),op.b,op.a,op.xHistory,op.yHistory);
+        signal.values = difference(x,op.b,op.a,op.xHistory,op.yHistory);
+        signal.label = '差分方程输出'; signal.formula = 'a₀ y[n] = Σ bₖ x[n−k] − Σₖ≥₁ aₖ y[n−k]；按给定历史值递推';
+        analyses.push({type:'difference',b:op.b,a:op.a,zeroState,zeroInput,
+          impulse:difference([1,...Array(31).fill(0)],op.b,op.a,[],[]),step:difference(Array(32).fill(1),op.b,op.a,[],[])});
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -135,6 +146,26 @@
     if (x.length + h.length - 1 > MAX_SAMPLES) throw new Error('卷积输出超过 4096 项，请缩短输入或冲激响应。');
     const y = Array(x.length + h.length - 1).fill(0);
     x.forEach((v,i) => h.forEach((w,j) => {y[i+j] += v*w;}));
+    return y;
+  }
+  function coefficients(b, a) {
+    b = array(b,'分子 b'); a = array(a,'分母 a');
+    if (b.length > 129 || a.length > 129) throw new Error('差分系数最多 129 项。');
+    if (a[0] === 0) throw new Error('a₀ 不能为 0。');
+    const a0 = a[0]; b = b.map(v => v / a0); a = a.map(v => v / a0);
+    if ([...b,...a].some(v=>!Number.isFinite(v))) throw new Error('系数归一化溢出。');
+    return {b,a};
+  }
+  function history(value) { return value === undefined || value === '' || (Array.isArray(value) && !value.length) ? [] : array(value,'历史值'); }
+  function difference(x,b,a,xHistory=[],yHistory=[]) {
+    const y = [];
+    for (let n=0;n<x.length;n++) {
+      let sum=0;
+      for (let k=0;k<b.length;k++) sum += b[k]*(n-k >= 0 ? x[n-k] : (xHistory[k-n-1] ?? 0));
+      for (let k=1;k<a.length;k++) sum -= a[k]*(n-k >= 0 ? y[n-k] : (yHistory[k-n-1] ?? 0));
+      y.push(sum/a[0]);
+      if (!Number.isFinite(y[n]) || Math.abs(y[n]) > 1e150) throw new Error('递推响应溢出，请缩短观察窗口或检查不稳定系统参数。');
+    }
     return y;
   }
   // MATH_FUNCTIONS
