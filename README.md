@@ -1,17 +1,17 @@
 # DSP 实验台
 
-数字信号处理课程项目，当前 **v0.9.2 / 第 9 次提交 / 第 13 周**。第 1—9 次均有独立离线网页和周报；第 6 次按计划完成第二章代表性实验。OpenAI、DeepSeek 的真实模型接入安排在第 10、11 次。
+数字信号处理课程项目，当前 **v1.0.0 / 第 11 次提交 / 第 15 周**。第 5—15 周共 11 个版本均有独立离线网页和周报。最后两周已实现 OpenAI、DeepSeek 官方 API 配置与工具调用；真实账号验收需在本机填写自己的 API Key。
 
 ## 最快开始：下载后双击
 
 1. 在 GitHub 点击 **Code → Download ZIP** 并解压，或更新本地仓库。
-2. 双击 **[self/第十三周/index.html](self/第十三周/index.html)**，使用 Chrome、Edge 或 Firefox。
+2. 双击 **[self/第十五周/index.html](self/第十五周/index.html)**，使用 Chrome、Edge 或 Firefox。
 3. 展开左侧“FIR / Butterworth IIR 设计”，点击 **载入双频低通实验**，查看波形、频谱和延迟说明。
-4. 在右侧规则助手输入 `低通 100 Hz 然后分析频谱`，先预览，再执行。注意操作是追加的；尝试另一滤波器前可先“清空处理步骤”。
+4. 在右侧规则助手输入 `低通 100 Hz 然后分析频谱`，先预览，再执行。新增操作会追加；说“改成…”会修改当前步骤。
 
 单文件可以单独复制提交，断网可用，无需安装依赖、启动服务器或填写 API Key。GitHub 显示 HTML 源代码时，请先下载，不要把源码预览当成运行页面。根目录 `index.html` 是当前开发入口，需保留旁边的 `styles.css` 和 `src/`。
 
-v0.9.2 可以直接输入：
+离线规则助手可以直接输入：
 
 - `请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱`
 - 执行后输入 `截止改成 150Hz`，修改已有滤波步骤并重算后续频谱。
@@ -34,6 +34,8 @@ v0.9.2 可以直接输入：
 | 7 | 第 11 周 | DFT/FFT、窗函数、幅度与相位 | [第十一周](self/第十一周/README.md) |
 | 8 | 第 12 周 | FIR/IIR 设计、前后对照、双频与噪声 | [第十二周](self/第十二周/README.md) |
 | 9 | 第 13 周 | 导入导出复现、规则助手、本地工具接口 | [第十三周](self/第十三周/README.md) |
+| 10 | 第 14 周 | OpenAI 官方 API、密钥保存、工具调用与结果预览 | [第十四周](self/第十四周/README.md) |
+| 11 | 第 15 周 | DeepSeek 官方 API、双服务商切换与首版收束 | [第十五周](self/第十五周/README.md) |
 
 每个周目录保留当时的 DSP 功能；第 5—12 周现已回填能力受限的离线助手，是第十三周的对应子集。次数指课程交付，不是 Git 提交总数；课程周次不绑定当前日历日期。
 
@@ -45,13 +47,14 @@ v0.9.2 可以直接输入：
 - 直接 DFT / 基 2 FFT、单边幅度/主值相位、矩形/Hann/Hamming 分析窗、补零、去均值。
 - FIR 窗函数低通/高通和二阶 Butterworth IIR 低通/高通，波形与频谱叠加、系数、响应与延迟说明。
 - 下载原始/输出 CSV、任务 JSON、Markdown 实验报告。任务 JSON 内嵌导入数据，恢复不依赖原 CSV 的路径。
-- 离线规则助手支持常用自然句式、Hz/kHz、滤波抽头/阶数/窗参数及上下文修改；预览显示参数来源，执行后同步页面设置。复杂条件与任意自然语言仍需后续模型能力。
+- 离线规则助手支持常用自然句式、Hz/kHz、滤波抽头/阶数/窗参数及上下文修改；预览显示参数来源，执行后同步页面设置。更自由的表述可使用云端模型助手。
+- 模型设置、真实 API 请求、受限工具循环、参数错误反馈、取消/超时、结果预览与本地复算、模型记录导出。
 
 详细边界见 [本地验收](docs/本地验证指南.md) 和 [第二章实验验收](docs/第二章实验验收.md)。通用符号逆变换、带通/带阻、PSD、量化、实时采集未实现。没有采样率时仍可按下标分析，频谱单位为 cycles/sample；Hz 滤波设计要求有效采样率。
 
 ## 可选：启动本地后端
 
-只试离线实验不需要这一步。要验证未来 Agent 的工具调用链，安装 **Node.js 20+**，在项目目录运行：
+只试离线实验不需要这一步。要使用 OpenAI / DeepSeek 模型助手，安装 **Node.js 20+**，在项目目录运行：
 
 ```bash
 npm start
@@ -61,7 +64,14 @@ npm start
 
 在“保存、复现与本地服务”点击 **本地工具自检**。网页将当前信号存入本机内存，模拟助手调用 `get_signal_info → run_analysis`，再取回结果与浏览器计算核对。
 
-**v0.9.2 的后端是本机模拟工具模式，未发送任何真实模型请求，也不接收或保存 API Key。** 第 10 次将实现 OpenAI 设置、后端适配与本地密钥保存，第 11 次实现 DeepSeek。预定的密钥位置为用户配置目录，详细方案见 [模型接入工程方案](docs/模型接入工程方案.md)。当前不要将密钥写入 HTML、任务 JSON 或仓库。两家均计划使用官方 API；ChatGPT Plus / Pro 不包含 OpenAI API 额度，API 单独计费，见 [API 账号与接入说明](docs/API账号与接入说明.md)。
+在中间栏下方的 **云端模型助手 → 模型设置与连接测试** 选择服务商，填写模型 ID 和 API Key，保存后点击“测试模型与工具”。该按钮会发生真实 API 请求，可能收费。然后输入实验要求，发送并预览，核对步骤后应用到图表。
+
+- 第十四周模型入口：`http://127.0.0.1:8787/?week=14`，界面只开放 OpenAI。
+- 第十五周入口：`http://127.0.0.1:8787/`，可切换 OpenAI / DeepSeek，分别保存配置。
+- 密钥默认保存在用户目录 `.dsp-agent/providers.json`，为本机明文文件，Unix 权限 600；不写入网页、localStorage、任务或 Git。详情见 [模型使用与首版验收](docs/模型使用与首版验收.md)。
+- 两家使用固定官方地址及 Chat Completions 工具协议。ChatGPT 订阅不包含 OpenAI API 额度，见 [API 账号与接入说明](docs/API账号与接入说明.md)。
+
+**验证范围：本地数值、两家协议模拟、真实页面与本地后端链路已测试；没有使用真实账号调用官方模型。** 课程要求至少一种模型实际跑通，请按验收文档在本机完成最后一步并保存模型记录。离线 HTML 不能自行启动后端，云端不可用时仍可使用手动实验和规则助手。
 
 ## 开发与验证
 
@@ -69,13 +79,13 @@ npm start
 
 ```bash
 npm test
-npm run build:offline
+npm run build:release
 npm run build:weekly
 ```
 
 `build:weekly` 为第 5—12 周重建助手增强区和周报补充，不引入后续 DSP 算法；可重复执行。
 
-`build:offline` 默认只重建 `package.json` 中的当前交付路径（现在为第十三周），不覆盖历史周。临时输出可指定：
+`build:release` 同时重建第十四、十五周；`build:offline` 默认只重建 `package.json` 中的当前交付路径（现在为第十五周），不覆盖历史周。临时输出可指定：
 
 ```bash
 node scripts/build-offline.cjs /tmp/dsp-preview.html
@@ -89,6 +99,7 @@ python -m playwright install chromium
 python tests/browser_smoke.py
 python tests/deliveries_browser.py
 python tests/local_browser.py
+python tests/cloud_browser.py
 ```
 
 可用 `DSP_CHROMIUM_PATH` 指定已有 Chromium。基础脚本尝试 `file://`；本次云浏览器明确禁止该方式，因此采用本地 HTTP 检查源码，并在断网状态加载单文件内容。该替代验证不等于用户电脑已完成双击验证，请按 [本地验证指南](docs/本地验证指南.md) 检查。
@@ -99,8 +110,8 @@ python tests/local_browser.py
 
 ```text
 index.html / styles.css / src/  当前页面、共享 DSP、规则助手
-server/                        本机 HTTP、工具契约、受限模拟 Runner
-self/第五周 … 第十三周/          各次独立 HTML 与周报
+server/                        本机 HTTP、工具契约、受限 Runner、官方 API 适配和本地配置
+self/第五周 … 第十五周/          各次独立 HTML 与周报
 examples/                      CSV 和可导入的实验任务
 scripts/                       打包、发布与独立参考生成
 tests/                         数值、HTTP、工具流程与浏览器验证

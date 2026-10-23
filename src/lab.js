@@ -21,7 +21,7 @@ const Workbench = (() => {
     <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
     <details><summary>DFT / FFT 与频谱</summary><div class="field-pair"><label>算法<select id="spectrum-method"><option value="fft">FFT（基 2）</option><option value="dft">直接 DFT</option></select></label><label>变换点数<input id="spectrum-nfft" type="number" value="256" min="1" max="4096"></label></div><label>分析窗<select id="spectrum-window"><option value="rectangular">矩形窗</option><option value="hann">周期 Hann</option><option value="hamming">周期 Hamming</option></select></label><label class="check-label"><input id="spectrum-mean" type="checkbox"> 先去均值</label><button type="button" id="add-spectrum">分析当前单边频谱</button><p class="field-help">FFT 点数为 2 的幂；可补零，不截断数据。幅度按窗相干增益标定，DC 和奈奎斯特不加倍。</p></details>
     <details><summary>FIR / Butterworth IIR 设计</summary><label>实现<select id="filter-family"><option value="fir">FIR 窗函数法</option><option value="iir">二阶 Butterworth IIR</option></select></label><label>响应<select id="filter-response"><option value="lowpass">低通</option><option value="highpass">高通</option></select></label><label>截止频率 / Hz<input id="filter-cutoff" type="number" value="100" step="any"></label><label>FIR 抽头数（奇数）<input id="filter-taps" type="number" value="51" min="3" max="129" step="2"></label><label>FIR 设计窗<select id="filter-window"><option value="hamming">对称 Hamming</option><option value="hann">对称 Hann</option><option value="rectangular">矩形窗</option></select></label><button type="button" id="add-filter">设计并滤波</button><button type="button" id="dual-demo">载入双频低通实验</button><p class="field-help">FIR 截止处约 −6 dB，Butterworth 截止处 −3 dB；两者的截止定义不同。</p></details>
-    <details><summary>保存、复现与本地服务</summary><button type="button" id="export-task">下载任务 JSON</button><button type="button" id="export-original">下载原始 CSV</button><button type="button" id="export-output">下载输出 CSV</button><button type="button" id="export-report">下载实验报告</button><label>恢复任务 JSON<input id="task-file" type="file" accept=".json,application/json"></label><button type="button" id="import-task">导入并复现</button><button type="button" id="local-check">本地工具自检</button><p id="local-service-note" class="field-help">双击模式使用全部离线功能。运行 npm start 后在本地网页使用工具自检；本版尚未接入云端模型。</p></details>
+    <details><summary>保存、复现与本地服务</summary><button type="button" id="export-task">下载任务 JSON</button><button type="button" id="export-original">下载原始 CSV</button><button type="button" id="export-output">下载输出 CSV</button><button type="button" id="export-report">下载实验报告</button><label>恢复任务 JSON<input id="task-file" type="file" accept=".json,application/json"></label><button type="button" id="import-task">导入并复现</button><button type="button" id="local-check">本地工具自检</button><p id="local-service-note" class="field-help">双击模式使用全部离线功能。运行 npm start 后在本地网页使用工具自检；在“云端模型助手”配置 OpenAI / DeepSeek。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -85,6 +85,7 @@ const Workbench = (() => {
   }
   function connect(controller) {
     api = controller;
+    window.DSPLab = controller;
     action('add-transform', () => add({type:'transform', gain:number('op-gain'), shift:number('op-shift'), reverse:$('op-reverse').checked}));
     action('clear-operations', () => { operations = []; list(); api.run(); });
     action('import-csv', async () => {
@@ -111,7 +112,7 @@ const Workbench = (() => {
     action('export-output', () => download('dsp-output.csv',csvText(api.getResult().signal),'text/csv'));
     action('export-report', () => {
       const r=api.getResult();
-      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9.2 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
+      download('dsp-report.md',`# DSP 实验报告\n\n来源：v1.0.0 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
     });
     action('import-task', async () => {
       const file=$('task-file').files[0];if(!file)throw new Error('请选择任务 JSON。');
@@ -191,6 +192,7 @@ const Workbench = (() => {
     const link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function render(result) {
+    document.dispatchEvent(new Event("dsp-result"));
     if(pendingPlan)$('assistant-plan').textContent='结果已更新；再次执行前请重新解析预览。';
     pendingPlan=null;
     if($('assistant-execute'))$('assistant-execute').disabled=true;

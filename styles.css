@@ -675,7 +675,7 @@ pre {
 .workbench-controls label, .csv-import label { display: block; margin: 10px 0; font-size: 13px; }
 .workbench-controls input:not([type=checkbox]), .workbench-controls select, .workbench-controls textarea, .csv-import input:not([type=checkbox]) { width: 100%; min-width: 0; border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px; font: inherit; background: white; color: #152b43; }
 .check-label input { width: auto; }
-.workbench-controls button, .csv-import button, .analysis-card button { border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px 12px; background: #f0f5fc; color: #234e8b; cursor: pointer; font: inherit; font-size: 13px; }
+.workbench-controls button, .csv-import button, .analysis-card button, .cloud-panel button { border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px 12px; background: #f0f5fc; color: #234e8b; cursor: pointer; font: inherit; font-size: 13px; }
 #operation-list { padding-left: 20px; font-size: 12px; overflow-wrap: anywhere; }
 #operation-list li { margin: 8px 0; }
 .analysis-card p { color: #52677c; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
@@ -691,3 +691,14 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .results > .analysis-card { grid-column: 1 / -1; }
 .assistant-examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 .assistant-examples button { padding: 5px 8px; font-size: 12px; }
+
+.cloud-panel { padding: 24px; min-width: 0; }
+.cloud-panel label { display: block; margin-top: 12px; }
+.cloud-panel input, .cloud-panel select, .cloud-panel textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
+.cloud-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 650px; overflow: auto; font-size: 13px; }
+.cloud-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.cloud-panel button { white-space: normal; }
+.cloud-panel details { margin: 14px 0; }
+#cloud-endpoint { overflow-wrap: anywhere; }
+
+.cloud-panel #cloud-run, .cloud-panel #cloud-apply { background: #234e8b; border-color: #234e8b; color: #fff; }

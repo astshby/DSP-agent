@@ -7,7 +7,7 @@ import shutil
 from playwright.sync_api import sync_playwright, expect
 
 ROOT=Path(__file__).resolve().parents[1]
-WEEKS=['第五周','第六周','第七周','第八周','第九周','第十周','第十一周','第十二周','第十三周']
+WEEKS=['第五周','第六周','第七周','第八周','第九周','第十周','第十一周','第十二周','第十三周','第十四周','第十五周']
 
 def main():
     with sync_playwright() as p:
@@ -87,7 +87,7 @@ def main():
                 if stage>=7:page.locator('#spectrum-nfft').fill('256')
                 if stage<=8:
                     assert f'第 {stage+4} 周能力' in page.locator('#assistant-scope').inner_text()
-                examples=page.evaluate(f'CourseCapabilities.forWeek({stage+4}).examples')
+                examples=page.evaluate(f'CourseCapabilities.forWeek({min(stage+4,13)}).examples')
                 for text in examples:
                     before=page.locator('#task-json').inner_text()
                     page.locator('#assistant-text').fill(text);page.locator('#assistant-prepare').click()
@@ -107,6 +107,10 @@ def main():
                 assert not page.locator('#assistant-execute').is_disabled()
                 page.locator('#start-index').fill('3')
                 assert page.locator('#assistant-execute').is_disabled(), 'page edit must invalidate old preview'
+                if stage>=10:
+                    assert page.locator('#cloud-run').is_disabled()
+                    assert '当前是离线 HTML' in page.locator('#cloud-connection').inner_text()
+                    assert page.locator('#cloud-provider option').count()==(1 if stage==10 else 2)
                 assert not errors,errors
                 assert not requests,requests
                 assert not re.search(r'NaN|Infinity',page.locator('#analyses').inner_html() if stage>=2 else page.locator('#waveform-plot').inner_html())

@@ -1,0 +1,2084 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152b43">
+  <title>DSP 实验台 · v1.0</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23152b43'/%3E%3Cpath d='M5 16 Q10 1 16 16 T27 16' fill='none' stroke='%237bd1c5' stroke-width='3'/%3E%3C/svg%3E">
+  <style>
+:root {
+  color-scheme:light;
+  --ink:#193149;
+  --muted:#64768a;
+  --line:#dce4ec;
+  --blue:#285ab2;
+  --teal:#167d77;
+  --bg:#f0f4f8;
+  --card:#fff;
+  font-family:Inter,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+  font-size:14px
+}
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.6
+}
+button,input,select,textarea {
+  font:inherit
+}
+button,select,input[type=radio] {
+  cursor:pointer
+}
+button {
+  transition:background .15s,border-color .15s
+}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible {
+  outline:3px solid #93b8f1;
+  outline-offset:3px
+}
+[hidden] {
+  display:none!important
+}
+.topbar {
+  min-height:58px;
+  padding:12px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#152b43;
+  color:#dce8f4;
+  gap:15px
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px
+}
+.brand strong {
+  color:white;
+  font-size:16px
+}
+.brand-icon {
+  background:#2b637e;
+  color:white;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  font-size:28px;
+  line-height:1
+}
+.brand-divider {
+  color:#68839c
+}
+.offline {
+  font-size:12px;
+  color:#bfdfd5;
+  white-space:nowrap
+}
+.offline span {
+  color:#60c9aa;
+  margin-right:5px
+}
+.workspace {
+  max-width:1580px;
+  margin:auto;
+  padding:26px 30px 24px
+}
+.intro {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  margin-bottom:22px
+}
+.eyebrow {
+  margin:0 0 4px;
+  color:var(--teal);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.08em
+}
+h1 {
+  font-size:30px;
+  line-height:1.3;
+  margin:3px 0 7px;
+  letter-spacing:-.02em
+}
+.intro-text {
+  color:var(--muted);
+  margin:0
+}
+.version {
+  text-align:right;
+  display:grid;
+  grid-template-columns:auto auto;
+  column-gap:12px;
+  align-items:center
+}
+.version span {
+  font-size:13px
+}
+.version strong {
+  font-size:12px;
+  border:1px solid #cddce9;
+  padding:2px 8px;
+  border-radius:5px;
+  background:#e7eef5
+}
+.version small {
+  grid-column:1/-1;
+  color:var(--muted);
+  margin-top:5px
+}
+.presets {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-bottom:18px
+}
+.presets>span {
+  color:var(--muted);
+  font-size:12px;
+  margin-right:4px
+}
+.presets button {
+  border:1px solid #d4dee9;
+  color:#35506a;
+  background:#fff;
+  border-radius:7px;
+  padding:6px 12px;
+  font-size:12px
+}
+.presets button:hover {
+  border-color:#82a6ce;
+  background:#f8fbff
+}
+.presets button span {
+  margin-left:12px;
+  color:#6f8ca6
+}
+.lab-grid {
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr) 248px;
+  gap:16px;
+  align-items:start
+}
+.card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:0 3px 14px #182d4604;
+  min-width:0
+}
+.section-heading {
+  display:flex;
+  align-items:center;
+  gap:9px
+}
+.section-heading h2,h2 {
+  font-size:15px;
+  margin:0;
+  font-weight:700
+}
+.step-number {
+  font-size:11px;
+  font-weight:700;
+  color:var(--teal);
+  font-variant-numeric:tabular-nums
+}
+.controls {
+  padding:19px
+}
+.source-options {
+  border:0;
+  margin:17px 0 13px;
+  padding:0;
+  display:flex;
+  gap:12px
+}
+.source-options legend {
+  font-size:12px;
+  font-weight:650;
+  margin-bottom:7px
+}
+.source-options label {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:12px;
+  margin:0;
+  font-weight:400
+}
+.source-options input {
+  accent-color:var(--blue);
+  margin:0
+}
+.controls label {
+  display:block;
+  margin:12px 0 5px;
+  font-size:12px;
+  font-weight:650
+}
+.controls .source-options label {
+  display:flex;
+  margin:0
+}
+.controls label span {
+  float:right;
+  font-weight:400;
+  color:var(--muted)
+}
+input:not([type=radio]),select,textarea {
+  width:100%;
+  border:1px solid #d4deea;
+  background:#fafcff;
+  color:var(--ink);
+  padding:8px 10px;
+  border-radius:7px;
+  min-width:0
+}
+input:not([type=radio]) {
+  font-variant-numeric:tabular-nums
+}
+textarea {
+  resize:vertical;
+  min-height:95px
+}
+.field-pair {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:11px
+}
+.field-pair>div {
+  min-width:0
+}
+.field-help {
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.6;
+  margin:8px 0 0
+}
+.form-divider {
+  height:1px;
+  background:var(--line);
+  margin-top:20px
+}
+.primary-button {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  margin-top:20px;
+  border:0;
+  border-radius:8px;
+  padding:11px 14px;
+  background:var(--blue);
+  color:white;
+  font-weight:650
+}
+.primary-button:hover {
+  background:#214d98
+}
+.reset-button {
+  width:100%;
+  margin-top:8px;
+  border:0;
+  padding:6px;
+  background:transparent;
+  color:var(--muted);
+  font-size:12px
+}
+.reset-button:hover {
+  color:var(--blue)
+}
+.stage,.results {
+  display:grid;
+  gap:14px;
+  min-width:0
+}
+.plot-card {
+  padding:18px 20px 15px
+}
+.plot-header,.chart-toolbar,.plot-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px
+}
+.pill {
+  font-size:11px;
+  background:#edf4fc;
+  color:#365b89;
+  padding:3px 9px;
+  border-radius:20px
+}
+.chart-toolbar {
+  margin-top:18px;
+  font-size:11px;
+  color:var(--muted)
+}
+.chart-toolbar label {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap
+}
+.chart-toolbar select {
+  width:auto;
+  padding:4px 7px;
+  font-size:11px;
+  background:white
+}
+.plot-wrap {
+  padding-top:8px;
+  min-width:0
+}
+#waveform-plot {
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:245px
+}
+.plot-footer {
+  border-top:1px solid #eef2f6;
+  padding-top:11px;
+  font-size:10px;
+  color:var(--muted)
+}
+.legend-dot {
+  display:inline-block;
+  width:7px;
+  height:7px;
+  background:var(--blue);
+  border-radius:50%;
+  margin-right:5px
+}
+.status {
+  font-size:12px;
+  background:#eaf5f1;
+  border:1px solid #cde5dc;
+  color:#245e4f;
+  padding:10px 13px;
+  border-radius:8px;
+  overflow-wrap:anywhere
+}
+.status.warning {
+  background:#fff6e7;
+  border-color:#eeddbb;
+  color:#78551e
+}
+.status.error {
+  background:#fff0ef;
+  border-color:#e7c5c0;
+  color:#8b3029
+}
+.status.pending {
+  background:#edf3fd;
+  border-color:#cbdaf0;
+  color:#355b8b
+}
+.explanation {
+  padding:17px 20px
+}
+.formula {
+  font-family:Cambria,"Times New Roman",serif;
+  font-size:20px;
+  margin:13px 0 9px;
+  color:#295179;
+  overflow-wrap:anywhere
+}
+.explanation>p:not(.formula) {
+  font-size:12px;
+  color:var(--muted);
+  margin:7px 0
+}
+.explanation .parameter-summary {
+  color:#385674!important;
+  background:#f4f7fa;
+  padding:8px 10px;
+  border-radius:6px;
+  font-variant-numeric:tabular-nums
+}
+.task-details {
+  padding:13px 18px
+}
+.task-details summary {
+  cursor:pointer;
+  font-size:12px;
+  font-weight:600
+}
+.task-details summary span {
+  float:right;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:400
+}
+.task-details p {
+  font-size:11px;
+  color:var(--muted)
+}
+pre {
+  margin:10px 0 0;
+  background:#152b43;
+  color:#deebf5;
+  border-radius:7px;
+  padding:12px;
+  font-size:11px;
+  max-height:260px;
+  overflow:auto;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere
+}
+.summary-card,.samples-card {
+  padding:18px
+}
+.sample-total {
+  display:flex;
+  align-items:baseline;
+  gap:9px;
+  margin:13px 0
+}
+.sample-total strong {
+  font-size:35px;
+  letter-spacing:-.04em;
+  font-weight:650;
+  line-height:1.3
+}
+.sample-total span {
+  font-size:11px;
+  color:var(--muted)
+}
+.metrics {
+  margin:0
+}
+.metrics>div {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border-top:1px solid #edf1f6;
+  padding:9px 0;
+  font-size:11px
+}
+.metrics dt {
+  color:var(--muted)
+}
+.metrics dd {
+  margin:0;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+  max-width:60%
+}
+.samples-card table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:11px;
+  font-size:11px;
+  font-variant-numeric:tabular-nums
+}
+.samples-card th {
+  text-align:left;
+  background:#f4f7fa;
+  color:var(--muted);
+  font-weight:500
+}
+.samples-card th,.samples-card td {
+  padding:6px 8px;
+  border-bottom:1px solid #edf1f6
+}
+.samples-card th:last-child,.samples-card td:last-child {
+  text-align:right
+}
+.lesson-notes {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-top:22px;
+  padding:15px 4px 0;
+  border-top:1px solid #dce4ec
+}
+.lesson-notes div {
+  display:flex;
+  gap:12px;
+  font-size:11px
+}
+.lesson-notes strong {
+  white-space:nowrap;
+  color:#466584
+}
+.lesson-notes span {
+  color:var(--muted)
+}
+.sr-only {
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0
+}
+@media(min-width:1500px) {
+  #waveform-plot {
+    min-height:310px
+  }
+  .workspace {
+    padding-top:32px
+  }
+}
+@media(max-width:1150px) {
+  .lab-grid {
+    grid-template-columns:265px minmax(0,1fr)
+  }
+  .results {
+    grid-column:1/-1;
+    grid-template-columns:1fr 1fr
+  }
+  .summary-card .metrics {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:24px
+  }
+  .sample-total {
+    margin:8px 0
+  }
+  .samples-card table {
+    margin-top:5px
+  }
+  .workspace {
+    padding:22px
+  }
+  .topbar {
+    padding-left:22px;
+    padding-right:22px
+  }
+}
+@media(max-width:700px) {
+  .topbar {
+    padding:12px 16px
+  }
+  .brand {
+    gap:8px
+  }
+  .brand>span:last-child,.brand-divider {
+    display:none
+  }
+  .workspace {
+    padding:19px 14px
+  }
+  .intro {
+    align-items:flex-start
+  }
+  .intro h1 {
+    font-size:24px
+  }
+  .intro-text {
+    font-size:12px
+  }
+  .version {
+    display:block;
+    min-width:76px
+  }
+  .version>span {
+    display:none
+  }
+  .version small {
+    display:block;
+    font-size:10px
+  }
+  .lab-grid {
+    grid-template-columns:1fr
+  }
+  .controls {
+    padding:17px
+  }
+  .results {
+    grid-column:auto;
+    grid-template-columns:1fr 1fr;
+    gap:10px
+  }
+  .summary-card .metrics {
+    display:block
+  }
+  .summary-card,.samples-card {
+    padding:13px
+  }
+  .sample-total strong {
+    font-size:30px
+  }
+  .plot-card {
+    padding:16px 12px
+  }
+  .plot-header {
+    padding:0 3px
+  }
+  .plot-footer {
+    align-items:flex-start
+  }
+  .plot-footer>span {
+    max-width:55%
+  }
+  #waveform-plot {
+    min-height:180px
+  }
+  .explanation {
+    padding:16px
+  }
+  .presets {
+    gap:6px
+  }
+  .presets>span {
+    width:100%
+  }
+  .presets button {
+    padding:5px 9px
+  }
+  .lesson-notes {
+    grid-template-columns:1fr;
+    gap:8px
+  }
+  .metrics>div {
+    font-size:10px
+  }
+  .chart-toolbar {
+    font-size:10px
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  * {
+    transition:none!important
+  }
+}
+@media(max-width:700px) {
+  .intro {
+    display:block
+  }
+  .version {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:12px;
+    text-align:left
+  }
+  .version small {
+    margin:0
+  }
+}
+
+/* Experiment controls and responsive analysis panels. */
+.input-column { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.workbench-controls, .analysis-card { padding: 22px; }
+.workbench-controls h2, .analysis-card h2 { margin: 0 0 12px; font-size: 17px; }
+.workbench-controls details, .csv-import { margin: 16px 0; border-top: 1px solid #e1e8ef; padding-top: 12px; }
+.workbench-controls summary, .csv-import summary { cursor: pointer; font-weight: 650; margin-bottom: 12px; }
+.workbench-controls label, .csv-import label { display: block; margin: 10px 0; font-size: 13px; }
+.workbench-controls input:not([type=checkbox]), .workbench-controls select, .workbench-controls textarea, .csv-import input:not([type=checkbox]) { width: 100%; min-width: 0; border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px; font: inherit; background: white; color: #152b43; }
+.check-label input { width: auto; }
+.workbench-controls button, .csv-import button, .analysis-card button, .cloud-panel button { border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px 12px; background: #f0f5fc; color: #234e8b; cursor: pointer; font: inherit; font-size: 13px; }
+#operation-list { padding-left: 20px; font-size: 12px; overflow-wrap: anywhere; }
+#operation-list li { margin: 8px 0; }
+.analysis-card p { color: #52677c; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.analysis-card pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.analysis-card svg { width: 100%; display: block; }
+.analysis-card table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.analysis-card td, .analysis-card th { padding: 6px; text-align: left; border-bottom: 1px solid #e1e8ef; overflow-wrap: anywhere; }
+.analysis-scroll { overflow-x: auto; }
+#assistant-text { width: 100%; margin: 10px 0; border: 1px solid #c9d5e2; border-radius: 8px; padding: 10px; resize: vertical; font: inherit; font-size: 13px; }
+.assistant-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#assistant-plan { max-height: 300px; overflow: auto; }
+.results > .analysis-card { grid-column: 1 / -1; }
+.assistant-examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.assistant-examples button { padding: 5px 8px; font-size: 12px; }
+
+.cloud-panel { padding: 24px; min-width: 0; }
+.cloud-panel label { display: block; margin-top: 12px; }
+.cloud-panel input, .cloud-panel select, .cloud-panel textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
+.cloud-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 650px; overflow: auto; font-size: 13px; }
+.cloud-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.cloud-panel button { white-space: normal; }
+.cloud-panel details { margin: 14px 0; }
+#cloud-endpoint { overflow-wrap: anywhere; }
+
+.cloud-panel #cloud-run, .cloud-panel #cloud-apply { background: #234e8b; border-color: #234e8b; color: #fff; }
+
+</style>
+</head>
+<body data-course-week="15">
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">∿</span><strong>DSP 实验台</strong><span class="brand-divider">/</span><span>数字信号处理</span></div>
+    <span class="offline"><span aria-hidden="true">●</span> 本地离线运行</span>
+  </header>
+  <main class="workspace">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">实验 11 · 双模型综合实验</p><h1 id="page-title">双模型综合实验</h1><p class="intro-text">从信号输入到处理与解释，每个实验都可以离线复现。</p></div>
+      <div class="version"><span>第 11 次提交 / 第 15 周</span><strong>v1.0.0</strong><small>OpenAI · DeepSeek · 离线</small></div>
+    </section>
+
+    <nav class="presets" aria-label="实验预设">
+      <span>快速实验</span>
+      <button type="button" data-preset="sine">正弦采样 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="impulse">单位脉冲 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="step">单位阶跃 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="manual">输入一个序列 <span aria-hidden="true">↗</span></button>
+    </nav>
+
+    <div class="lab-grid">
+      <section class="card controls" aria-labelledby="input-title">
+        <div class="section-heading"><span class="step-number">01</span><h2 id="input-title">设置信号</h2></div>
+        <form id="signal-form" novalidate>
+          <fieldset class="source-options"><legend>信号来源</legend>
+            <label><input type="radio" name="source" value="generated" checked> 信号发生器</label>
+            <label><input type="radio" name="source" value="manual"> 手动序列</label>
+          </fieldset>
+          <div id="generated-fields">
+            <label for="waveform">波形类型</label>
+            <select id="waveform"><option value="sine">正弦信号</option><option value="cosine">余弦信号</option><option value="impulse">脉冲信号</option><option value="step">阶跃信号</option><option value="multitone">双频叠加</option><option value="noise">可重复均匀噪声</option></select>
+            <div id="periodic-fields" class="field-pair">
+              <div><label for="frequency">频率 f <span>Hz</span></label><input id="frequency" type="number" value="50" min="0" step="any"></div>
+              <div><label for="phase">相位 φ <span>°</span></label><input id="phase" type="number" value="0" step="any"></div>
+            </div>
+            <div id="second-tone" class="field-pair" hidden><div><label for="frequency2">第二频率 / Hz</label><input id="frequency2" type="number" value="300" step="any"></div><div><label for="amplitude2">第二幅值</label><input id="amplitude2" type="number" value="0.5" step="any"></div></div>
+            <div id="noise-fields" hidden><label for="noise-seed">随机种子</label><input id="noise-seed" type="number" value="42" step="1"></div>
+            <div id="position-field" hidden><label for="position">发生位置 k <span>下标</span></label><input id="position" type="number" value="0" step="1"></div>
+            <div class="field-pair">
+              <div><label for="amplitude">幅值 A</label><input id="amplitude" type="number" value="1" step="any"></div>
+              <div><label for="offset">直流偏置 D</label><input id="offset" type="number" value="0" step="any"></div>
+            </div>
+          </div>
+          <div id="manual-fields" hidden>
+            <label for="sequence">样值 x[n]</label>
+            <textarea id="sequence" rows="4" spellcheck="false" aria-describedby="sequence-help">1, 2, 1</textarea>
+            <p id="sequence-help" class="field-help">用逗号、空格或换行分隔；支持小数和科学计数法。</p>
+          </div>
+          <div class="form-divider"></div>
+          <div class="field-pair">
+            <div><label for="sample-rate">采样率 fs <span>Hz</span></label><input id="sample-rate" type="number" value="1000" step="any" aria-describedby="sampling-help"></div>
+            <div id="count-field"><label for="sample-count">样本数 N</label><input id="sample-count" type="number" value="64" min="1" max="4096" step="1"></div>
+          </div>
+          <label for="start-index">首项下标 n₀</label><input id="start-index" type="number" value="0" step="1">
+          <p id="sampling-help" class="field-help">最多 4096 个样值。采样时间为 t = n / fs。</p>
+          <button class="primary-button" id="run-button" type="submit">生成并绘图 <span aria-hidden="true">→</span></button>
+          <button class="reset-button" id="reset-button" type="button">恢复默认正弦实验</button>
+        </form>
+      </section>
+
+      <section class="stage" aria-label="分析结果">
+        <article class="card plot-card">
+          <div class="plot-header"><div class="section-heading"><span class="step-number">02</span><h2>时域波形</h2></div><span id="signal-label" class="pill">正弦序列</span></div>
+          <div class="chart-toolbar"><span id="plot-range"></span><label for="axis-mode">横轴 <select id="axis-mode"><option value="index">下标 n</option><option value="time">时间 t / s</option></select></label></div>
+          <div class="plot-wrap"><svg id="waveform-plot" viewBox="0 0 900 350" role="img" aria-labelledby="plot-title plot-description"><title id="plot-title">离散信号时域图</title><desc id="plot-description">运行后展示样值。</desc></svg></div>
+          <div class="plot-footer"><span><i class="legend-dot" aria-hidden="true"></i> x[n] · 当前样值</span><span id="plot-style-note">竖线和圆点表示离散样值</span></div>
+        </article>
+        <div id="status" class="status" role="status" aria-live="polite" tabindex="-1">正在准备默认实验…</div>
+        <article class="card explanation"><div class="section-heading"><span class="step-number">03</span><h2>本次实验</h2></div><p id="formula" class="formula"></p><p id="experiment-explanation"></p><p id="parameter-summary" class="parameter-summary"></p></article>
+        <details class="card task-details"><summary>查看本次任务配置 <span>JSON</span></summary><p>界面将参数整理为任务，再调用同一个分析入口。</p><pre id="task-json"></pre></details>
+      </section>
+
+      <aside class="results" aria-label="数据摘要和样值">
+        <section class="card summary-card"><div class="section-heading"><span class="step-number">04</span><h2>数据摘要</h2></div>
+          <div class="sample-total"><strong id="metric-count">—</strong><span>个样值</span></div>
+          <dl class="metrics"><div><dt>采样率</dt><dd id="metric-rate">—</dd></div><div><dt>下标范围</dt><dd id="metric-range">—</dd></div><div><dt>均值</dt><dd id="metric-mean">—</dd></div><div><dt>均方根 RMS</dt><dd id="metric-rms">—</dd></div><div><dt>峰峰值</dt><dd id="metric-p2p">—</dd></div><div><dt>序列能量 Σ|x[n]|²</dt><dd id="metric-energy">—</dd></div></dl>
+          <p class="field-help">指标针对当前有限序列计算。幅度单位沿用输入数据。</p>
+        </section>
+        <section class="card samples-card"><h2>样值预览</h2><p id="sample-preview-note" class="field-help"></p><table><caption class="sr-only">当前信号的前八个样值</caption><thead><tr><th scope="col">下标 n</th><th scope="col">x[n]</th></tr></thead><tbody id="samples-body"></tbody></table></section>
+      </aside>
+    </div>
+    <footer class="lesson-notes"><div><strong>信号</strong><span>数值与下标共同描述一个序列。</span></div><div><strong>采样</strong><span>采样率决定相邻样值的时间间隔。</span></div><div><strong>实验</strong><span>改一个参数，比较波形与数值变化。</span></div></footer>
+    <noscript><p class="status error">此实验台需要浏览器启用 JavaScript。</p></noscript>
+  </main>
+<script>
+/* Pure DSP functions shared by the browser and future Node.js tools. */
+(function (root, factory) {
+  'use strict';
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.DSP = api;
+})(globalThis, function () {
+  'use strict';
+  const MAX_SAMPLES = 4096;
+  const NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
+
+  function number(value, label, { integer = false, optional = false } = {}) {
+    if (value === null || value === undefined || String(value).trim() === '') {
+      if (optional) return null;
+      throw new Error(`${label}不能为空。`);
+    }
+    const raw = String(value).trim();
+    if (!NUMBER.test(raw) || !Number.isFinite(Number(raw))) {
+      throw new Error(`${label}必须是有限的十进制数值。`);
+    }
+    const result = Number(raw);
+    if (integer && !Number.isSafeInteger(result)) throw new Error(`${label}必须是安全范围内的整数。`);
+    return result;
+  }
+
+  function sampleRate(value, optional = false) {
+    const fs = number(value, '采样率', { optional });
+    if (fs !== null && fs <= 0) throw new Error('采样率必须大于 0 Hz。');
+    if (fs !== null && !Number.isFinite(1 / fs)) throw new Error('采样率过小，采样间隔超出数值范围。');
+    return fs;
+  }
+
+  function parseSequence(raw) {
+    let text = String(raw ?? '').trim().replaceAll('，', ',');
+    if (text.startsWith('[') && text.endsWith(']')) text = text.slice(1, -1).trim();
+    if (!text) throw new Error('请至少输入一个样值。');
+    if (/^,|,$|,\s*,/.test(text)) throw new Error('序列中有空样值，请检查连续或首尾逗号。');
+    const parts = text.split(/[\s,]+/);
+    if (parts.length > MAX_SAMPLES) throw new Error(`当前版本最多支持 ${MAX_SAMPLES} 个样值。`);
+    return parts.map((part, i) => number(part, `第 ${i + 1} 个样值`));
+  }
+
+  function statistics(values) {
+    let sum = 0, energy = 0, min = Infinity, max = -Infinity;
+    for (const value of values) {
+      sum += value;
+      energy += value * value;
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+    }
+    const metrics = { count: values.length, min, max, mean: sum / values.length,
+      rms: Math.sqrt(energy / values.length), energy, peakToPeak: max - min };
+    if (Object.values(metrics).some(value => !Number.isFinite(value))) {
+      throw new Error('样值幅度过大，无法可靠计算统计量。请减小数值。');
+    }
+    return metrics;
+  }
+
+
+  function array(value, label) {
+    const values = Array.isArray(value) ? value.map(v => number(v, label)) : parseSequence(value);
+    if (!values.length || values.length > MAX_SAMPLES) throw new Error(`${label}长度必须在 1 到 ${MAX_SAMPLES} 之间。`);
+    return values;
+  }
+
+  // A deliberately bounded CSV dialect: comma-separated UTF-8, optional header,
+  // quoted fields (including escaped quotes), no embedded newlines.
+  function parseCSV(text, { valueColumn = 0, timeColumn = null, header = true } = {}) {
+    if (typeof text !== 'string' || text.length > 1024 * 1024) throw new Error('CSV 文件不能超过 1 MiB。');
+    valueColumn = number(valueColumn, '数值列', { integer: true });
+    timeColumn = number(timeColumn, '时间列', { integer: true, optional: true });
+    if (valueColumn < 0 || (timeColumn !== null && (timeColumn < 0 || timeColumn === valueColumn))) throw new Error('数值列与时间列必须是不同的非负列号。');
+    const lines = text.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+    const rows = lines.map((line, index) => {
+      const fields = []; let field = '', quoted = false, closed = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (quoted && line[i + 1] === '"') { field += '"'; i++; }
+          else if (quoted) { quoted = false; closed = true; }
+          else if (!field && !closed) quoted = true;
+          else throw new Error(`CSV 第 ${index + 1} 行引号格式错误。`);
+        } else if (c === ',' && !quoted) { fields.push(field); field = ''; closed = false; }
+        else { if (closed && c.trim()) throw new Error('CSV 引号后存在多余内容。'); field += c; }
+      }
+      if (quoted) throw new Error('CSV 不支持跨行引号字段。');
+      fields.push(field); return fields;
+    });
+    if (header) rows.shift();
+    if (!rows.length || rows.length > MAX_SAMPLES) throw new Error(`CSV 数据必须为 1 到 ${MAX_SAMPLES} 行。`);
+    const columns = rows[0].length;
+    if (rows.some(row => row.length !== columns) || valueColumn >= columns || (timeColumn !== null && timeColumn >= columns)) throw new Error('CSV 列数不一致或所选列不存在。');
+    const values = rows.map((row, i) => number(row[valueColumn], `CSV 第 ${i + 1} 个样值`));
+    let sampleRateHz = null, timeStart = null;
+    if (timeColumn !== null) {
+      if (rows.length < 2) throw new Error('由时间列推算采样率至少需要两个样值。');
+      const times = rows.map(row => number(row[timeColumn], 'CSV 时间（秒）'));
+      const dt = times[1] - times[0];
+      if (!(dt > 0)) throw new Error('CSV 时间必须严格递增。');
+      if (times.some((t, i) => i && (!(t > times[i - 1]) || Math.abs((t - times[i - 1]) - dt) > Math.max(dt * 1e-5, Number.EPSILON * Math.max(1, Math.abs(t)) * 8)))) throw new Error('CSV 时间必须等间隔；当前版本不自动重采样。');
+      sampleRateHz = sampleRate(1 / dt); timeStart = times[0];
+    }
+    statistics(values);
+    return { values, sampleRateHz, timeStart };
+  }
+
+  function processOperations(original, requested) {
+    let signal = { ...original, values: [...original.values] };
+    const operations = [], steps = [], analyses = [];
+    for (const request of requested) {
+      if (!request || typeof request !== 'object') throw new Error('处理操作格式错误。');
+      let op;
+      if (request.type === 'transform') {
+        op = { type: 'transform', gain: number(request.gain, '增益'), shift: number(request.shift, '移位', { integer: true }), reverse: request.reverse === true };
+        if (request.reverse !== undefined && typeof request.reverse !== 'boolean') throw new Error('反折必须是布尔值。');
+        if (op.reverse) { signal.n0 = -(signal.n0 + signal.values.length - 1); signal.values.reverse(); }
+        signal.n0 += op.shift;
+        signal.values = signal.values.map(v => v * op.gain);
+        signal.label = '序列变换结果'; signal.formula = `y[n] = ${op.gain} x[${op.reverse ? '−' : ''}(n − ${op.shift})]`;
+      } else if (request.type === 'convolve') {
+        op = {type:'convolve', kernel:array(request.kernel, '冲激响应'), n0:number(request.n0, '响应首项下标', {integer:true})};
+        signal.values = convolution(signal.values, op.kernel);
+        signal.n0 += op.n0; signal.label = '线性卷积输出'; signal.formula = 'y[n] = Σ x[k] h[n − k]；输入与 h 在窗口外按零处理';
+      } else if (request.type === 'difference') {
+        op = {type:'difference', ...coefficients(request.b,request.a), xHistory:history(request.xHistory), yHistory:history(request.yHistory), tail:number(request.tail ?? 0,'补零尾部', {integer:true})};
+        if (op.tail < 0 || signal.values.length + op.tail > MAX_SAMPLES) throw new Error('补零尾部必须非负且总长度不能超过 4096。');
+        if (op.xHistory.length > op.b.length - 1 || op.yHistory.length > op.a.length - 1) throw new Error('历史值数量不能超过相应差分阶数。');
+        const x = [...signal.values,...Array(op.tail).fill(0)];
+        const zeroState = difference(x,op.b,op.a,[],[]);
+        const zeroInput = difference(Array(x.length).fill(0),op.b,op.a,op.xHistory,op.yHistory);
+        signal.values = difference(x,op.b,op.a,op.xHistory,op.yHistory);
+        signal.label = '差分方程输出'; signal.formula = 'a₀ y[n] = Σ bₖ x[n−k] − Σₖ≥₁ aₖ y[n−k]；按给定历史值递推';
+        analyses.push({type:'difference',b:op.b,a:op.a,zeroState,zeroInput,
+          impulse:difference([1,...Array(31).fill(0)],op.b,op.a,[],[]),step:difference(Array(32).fill(1),op.b,op.a,[],[])});
+      } else if (request.type === 'dtft') {
+        op = {type:'dtft'};
+        const spectrum = dtft(signal.values, signal.n0);
+        let convolutionError = null;
+        const previous = operations.at(-1);
+        if (previous?.type === 'convolve') {
+          const before = steps.length > 1 ? steps.at(-2).signal : original;
+          const x = dtft(before.values,before.n0), h = dtft(previous.kernel,previous.n0);
+          convolutionError = Math.max(...spectrum.real.map((r,i)=>Math.hypot(r-(x.real[i]*h.real[i]-x.imag[i]*h.imag[i]),spectrum.imag[i]-(x.real[i]*h.imag[i]+x.imag[i]*h.real[i]))));
+        }
+        analyses.push({type:'dtft',...spectrum,convolutionError});
+      } else if (request.type === 'response') {
+        op = {type:'response',...coefficients(request.b,request.a)};
+        analyses.push({type:'response',...frequencyResponse(op.b,op.a)});
+      } else if (request.type === 'zplane') {
+        op = {type:'zplane',...coefficients(request.b,request.a)};
+        analyses.push({type:'zplane',...poleZero(op.b,op.a)});
+      } else if (request.type === 'inverse_z') {
+        op = {type:'inverse_z',pole:number(request.pole,'实极点 p'),side:request.side};
+        if (op.pole === 0 || Math.abs(op.pole)>10 || !['right','left'].includes(op.side)) throw new Error('典型逆变换要求 0 < |p| ≤ 10，并选择左边或右边序列。');
+        const n0=op.side==='right'?0:-16;
+        const values=Array.from({length:16},(_,i)=>op.side==='right'?op.pole**i:-(op.pole**(n0+i)));
+        statistics(values);
+        analyses.push({type:'inverse_z',...op,n0,values,stable:op.side==='right'?Math.abs(op.pole)<1:Math.abs(op.pole)>1,
+          roc:op.side==='right'?`|z| > ${Math.abs(op.pole)}`:`|z| < ${Math.abs(op.pole)}`});
+      } else if (request.type === 'zvalue') {
+        op={type:'zvalue',radius:number(request.radius,'z 的模'),angleDeg:number(request.angleDeg,'z 的辐角')};
+        if (op.radius<=0) throw new Error('本数值实验要求 |z| > 0。');
+        let real=0,imag=0;
+        signal.values.forEach((v,i)=>{const n=signal.n0+i, scale=v*op.radius**(-n),angle=op.angleDeg*Math.PI/180*n;real+=scale*Math.cos(angle);imag-=scale*Math.sin(angle);});
+        if (!Number.isFinite(real)||!Number.isFinite(imag)) throw new Error('z 变换求值溢出，请选择更接近单位圆的 z。');
+        analyses.push({type:'zvalue',...op,real,imag});
+      } else if (request.type === 'spectrum') {
+        op={type:'spectrum',method:request.method,window:request.window,nfft:number(request.nfft,'变换点数',{integer:true}),removeMean:request.removeMean===true};
+        if(request.removeMean!==undefined&&typeof request.removeMean!=='boolean')throw new Error('去均值必须是布尔值。');
+        analyses.push({type:'spectrum',...spectrum(signal,op)});
+      } else if (request.type === 'filter') {
+        op={type:'filter',family:request.family,response:request.response,cutoffHz:number(request.cutoffHz,'截止频率')};
+        if(op.family==='fir')Object.assign(op,{taps:number(request.taps,'抽头数',{integer:true}),window:request.window});
+        const design=designFilter(op,signal.sampleRateHz),before={...signal,values:[...signal.values]};
+        signal.values=difference(signal.values,design.b,design.a);
+        signal.label='数字滤波输出';signal.formula='零历史、因果滤波；保留与输入相同长度，尾部未延拓';
+        const config={method:'fft',window:'hann',nfft:2**Math.ceil(Math.log2(signal.values.length)),removeMean:false};
+        analyses.push({type:'filter',...design,before,after:{...signal,values:[...signal.values]},response:frequencyResponse(design.b,design.a),beforeSpectrum:spectrum(before,config),afterSpectrum:spectrum(signal,config)});
+      // OPERATION_BRANCHES
+      } else throw new Error(`尚未支持操作：${request.type}`);
+      if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
+      if (signal.sampleRateHz !== null && !Number.isFinite(Math.max(Math.abs(signal.n0), Math.abs(signal.n0 + signal.values.length - 1)) / signal.sampleRateHz)) throw new Error('处理后的时间轴超出范围。');
+      statistics(signal.values);
+      operations.push(op); steps.push({ operation: op, signal: { ...signal, values: [...signal.values] } });
+    }
+    return { operations, signal, steps, analyses };
+  }
+
+  function convolution(x, h) {
+    if (x.length + h.length - 1 > MAX_SAMPLES) throw new Error('卷积输出超过 4096 项，请缩短输入或冲激响应。');
+    const y = Array(x.length + h.length - 1).fill(0);
+    x.forEach((v,i) => h.forEach((w,j) => {y[i+j] += v*w;}));
+    return y;
+  }
+  function coefficients(b, a) {
+    b = array(b,'分子 b'); a = array(a,'分母 a');
+    if (b.length > 129 || a.length > 129) throw new Error('差分系数最多 129 项。');
+    if (a[0] === 0) throw new Error('a₀ 不能为 0。');
+    const a0 = a[0]; b = b.map(v => v / a0); a = a.map(v => v / a0);
+    if ([...b,...a].some(v=>!Number.isFinite(v))) throw new Error('系数归一化溢出。');
+    return {b,a};
+  }
+  function history(value) { return value === undefined || value === '' || (Array.isArray(value) && !value.length) ? [] : array(value,'历史值'); }
+  function difference(x,b,a,xHistory=[],yHistory=[]) {
+    const y = [];
+    for (let n=0;n<x.length;n++) {
+      let sum=0;
+      for (let k=0;k<b.length;k++) sum += b[k]*(n-k >= 0 ? x[n-k] : (xHistory[k-n-1] ?? 0));
+      for (let k=1;k<a.length;k++) sum -= a[k]*(n-k >= 0 ? y[n-k] : (yHistory[k-n-1] ?? 0));
+      y.push(sum/a[0]);
+      if (!Number.isFinite(y[n]) || Math.abs(y[n]) > 1e150) throw new Error('递推响应溢出，请缩短观察窗口或检查不稳定系统参数。');
+    }
+    return y;
+  }
+  function atFrequency(values, n0, omega) {
+    let real=0,imag=0;
+    values.forEach((v,i)=>{real+=v*Math.cos(omega*(n0+i));imag-=v*Math.sin(omega*(n0+i));});
+    return {real,imag};
+  }
+  function dtft(values,n0) {
+    const omega=Array.from({length:257},(_,i)=>-Math.PI+2*Math.PI*i/256);
+    const complex=omega.map(w=>atFrequency(values,n0,w));
+    const magnitude=complex.map(c=>Math.hypot(c.real,c.imag));
+    const threshold=Math.max(...magnitude)*1e-10;
+    return {omega,real:complex.map(c=>c.real),imag:complex.map(c=>c.imag),magnitude,
+      phase:complex.map((c,i)=>magnitude[i]<=threshold?null:Math.atan2(c.imag,c.real))};
+  }
+  function frequencyResponse(b,a) {
+    const num=dtft(b,0),den=dtft(a,0);
+    const complex=num.real.map((r,i)=>{
+      const d=den.real[i]**2+den.imag[i]**2;
+      return d < 1e-24 ? null : {real:(r*den.real[i]+num.imag[i]*den.imag[i])/d,imag:(num.imag[i]*den.real[i]-r*den.imag[i])/d};
+    });
+    const magnitude=complex.map(c=>c?Math.hypot(c.real,c.imag):null);
+    if (magnitude.some(v=>v!==null&&!Number.isFinite(v))) throw new Error('频率响应溢出。');
+    const threshold=Math.max(...magnitude.filter(v=>v!==null))*1e-10;
+    return {omega:num.omega,magnitude,phase:complex.map((c,i)=>!c||magnitude[i]<=threshold?null:Math.atan2(c.imag,c.real))};
+  }
+  function roots(coeffs) {
+    const c=[...coeffs];while(c.length>1&&c[0]===0)c.shift();
+    if(c.length===1)return [];
+    if(c.length===2)return [{real:-c[1]/c[0],imag:0}];
+    const [a,b,d]=c,delta=b*b-4*a*d;
+    if(!Number.isFinite(delta))throw new Error('零极点系数过大。');
+    if(delta>=0)return [{real:(-b+Math.sqrt(delta))/(2*a),imag:0},{real:(-b-Math.sqrt(delta))/(2*a),imag:0}];
+    return [{real:-b/(2*a),imag:Math.sqrt(-delta)/(2*a)},{real:-b/(2*a),imag:-Math.sqrt(-delta)/(2*a)}];
+  }
+  function poleZero(b,a) {
+    if(b.length>3||a.length>3)throw new Error('零极点实验目前支持最高二阶（各 3 个系数）。');
+    const m=Math.max(b.length,a.length),pad=c=>[...c,...Array(m-c.length).fill(0)];
+    let zeros=roots(pad(b)),poles=roots(pad(a));const cancelled=[];
+    if(b.every(v=>v===0))return {zeros:[],poles:[],cancelled,causalStable:true,roc:'零传递函数：各有限 z（表达式的可去奇点按延拓处理）；初始状态响应需另行判断'};
+    poles=poles.filter(p=>{
+      const index=zeros.findIndex(z=>Math.hypot(p.real-z.real,p.imag-z.imag)<1e-9);
+      if(index<0)return true;
+      cancelled.push(p);zeros.splice(index,1);return false;
+    });
+    if([...zeros,...poles].some(p=>!Number.isFinite(p.real)||!Number.isFinite(p.imag)))throw new Error('零极点求值溢出。');
+    const radius=Math.max(0,...poles.map(p=>Math.hypot(p.real,p.imag)));
+    return {zeros,poles,cancelled,causalStable:radius<1,roc:poles.length?`因果 ROC：|z| > ${radius.toPrecision(6)}`:'因果 ROC：整个有限 z 平面（常数传递函数）'};
+  }
+  function windowValues(length,kind) {
+    if(!['rectangular','hann','hamming'].includes(kind))throw new Error('不支持的窗函数。');
+    // Periodic analysis windows; FIR design uses a symmetric window separately.
+    return Array.from({length},(_,i)=>kind==='rectangular'||length===1?1:kind==='hann'?.5-.5*Math.cos(2*Math.PI*i/length):.54-.46*Math.cos(2*Math.PI*i/length));
+  }
+  function fourier(values,method) {
+    const n=values.length,real=[...values],imag=Array(n).fill(0);
+    if(method==='dft') {
+      for(let k=0;k<n;k++){const c=atFrequency(values,0,2*Math.PI*k/n);real[k]=c.real;imag[k]=c.imag;}
+    } else {
+      for(let i=1,j=0;i<n;i++) {
+        let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;
+        if(i<j)[real[i],real[j]]=[real[j],real[i]];
+      }
+      for(let length=2;length<=n;length*=2)for(let start=0;start<n;start+=length)for(let j=0;j<length/2;j++) {
+        const angle=-2*Math.PI*j/length,c=Math.cos(angle),s=Math.sin(angle),u=start+j,v=u+length/2;
+        const tr=c*real[v]-s*imag[v],ti=s*real[v]+c*imag[v];
+        real[v]=real[u]-tr;imag[v]=imag[u]-ti;real[u]+=tr;imag[u]+=ti;
+      }
+    }
+    return {real,imag};
+  }
+  function spectrum(signal,op) {
+    const count=signal.values.length,nfft=op.nfft;
+    if(!['dft','fft'].includes(op.method))throw new Error('请选择 DFT 或 FFT。');
+    if(nfft<count||nfft>MAX_SAMPLES||nfft<1)throw new Error('变换点数须不少于信号长度，且不超过 4096。');
+    if(op.method==='fft'&&(nfft&(nfft-1)))throw new Error('FFT 点数必须是 2 的整数次幂。');
+    if(op.method==='dft'&&nfft>1024)throw new Error('直接 DFT 演示最多 1024 点；大序列请用 FFT。');
+    const weights=windowValues(count,op.window),gain=weights.reduce((a,b)=>a+b,0);
+    const mean=op.removeMean?signal.values.reduce((a,b)=>a+b,0)/count:0;
+    const values=signal.values.map((v,i)=>(v-mean)*weights[i]);values.push(...Array(nfft-count).fill(0));
+    const complex=fourier(values,op.method),bins=Math.floor(nfft/2)+1;
+    const frequency=[],amplitude=[],phase=[],real=[],imag=[];
+    for(let k=0;k<bins;k++) {
+      const angle=-2*Math.PI*k*signal.n0/nfft,c=Math.cos(angle),s=Math.sin(angle);
+      const re=complex.real[k]*c-complex.imag[k]*s,im=complex.real[k]*s+complex.imag[k]*c;
+      real.push(re);imag.push(im);
+      frequency.push(k*(signal.sampleRateHz??1)/nfft);
+      amplitude.push(Math.hypot(re,im)/gain*(k===0||(nfft%2===0&&k===nfft/2)?1:2));
+      phase.push(Math.atan2(im,re));
+    }
+    const peak=Math.max(...amplitude),peakIndex=amplitude.indexOf(peak);
+    return {frequency,amplitude,real,imag,phase:phase.map((p,i)=>amplitude[i]<=peak*1e-10?null:p),window:op.window,method:op.method,nfft,count,
+      coherentGain:gain/count,binSpacing:(signal.sampleRateHz??1)/nfft,recordSpacing:(signal.sampleRateHz??1)/count,
+      frequencyUnit:signal.sampleRateHz===null?'cycles/sample':'Hz',peak:peak>1e-14?{frequency:frequency[peakIndex],amplitude:peak}:null};
+  }
+  function designFilter(op,fs) {
+    if(fs===null)throw new Error('按 Hz 设计滤波器前必须设置采样率。');
+    if(!(op.cutoffHz>0&&op.cutoffHz<fs/2))throw new Error('截止频率必须在 0 与 fs/2 之间。');
+    if(!['lowpass','highpass'].includes(op.response))throw new Error('目前仅支持低通与高通。');
+    if(op.family==='fir') {
+      const n=op.taps;
+      if(!Number.isInteger(n)||n<3||n>129||n%2===0)throw new Error('FIR 抽头数必须为 3 到 129 的奇数。');
+      if(!['rectangular','hann','hamming'].includes(op.window))throw new Error('不支持的设计窗。');
+      const mid=(n-1)/2,fc=op.cutoffHz/fs;
+      let b=Array.from({length:n},(_,i)=>{
+        const t=i-mid,low=t===0?2*fc:Math.sin(2*Math.PI*fc*t)/(Math.PI*t);
+        const ideal=op.response==='lowpass'?low:(t===0?1:0)-low;
+        const w=op.window==='rectangular'?1:op.window==='hann'?.5-.5*Math.cos(2*Math.PI*i/(n-1)):.54-.46*Math.cos(2*Math.PI*i/(n-1));
+        return ideal*w;
+      });
+      const gain=b.reduce((sum,v,i)=>sum+v*Math.cos((op.response==='lowpass'?0:Math.PI)*(i-mid)),0);
+      if(Math.abs(gain)<1e-12)throw new Error('滤波器设计增益过小。');
+      b=b.map(v=>v/gain);
+      return {b,a:[1],family:'fir',delaySamples:mid};
+    }
+    if(op.family==='iir') {
+      const k=Math.tan(Math.PI*op.cutoffHz/fs),norm=1/(1+Math.SQRT2*k+k*k);
+      const b=op.response==='lowpass'?[k*k*norm,2*k*k*norm,k*k*norm]:[norm,-2*norm,norm];
+      return {b,a:[1,2*(k*k-1)*norm,(1-Math.SQRT2*k+k*k)*norm],family:'iir',delaySamples:null};
+    }
+    throw new Error('请选择 FIR 或二阶 Butterworth IIR。');
+  }
+  // MATH_FUNCTIONS
+
+  // Cross-runtime libm may differ by a few ULPs. Compare numerical results,
+  // treating principal phases modulo 2π and retaining structural checks.
+  function compareResults(actual,expected) {
+    let maxAbsoluteError=0;
+    function equal(a,b,key='') {
+      if(typeof a==='number'||typeof b==='number') {
+        if(typeof a!=='number'||typeof b!=='number'||!Number.isFinite(a)||!Number.isFinite(b))return false;
+        let delta=Math.abs(a-b);
+        if(key==='phase')delta=Math.abs(Math.atan2(Math.sin(a-b),Math.cos(a-b)));
+        maxAbsoluteError=Math.max(maxAbsoluteError,delta);
+        return delta<=1e-10*Math.max(1,Math.abs(a),Math.abs(b));
+      }
+      if(a===null||b===null||typeof a!=='object'||typeof b!=='object')return a===b;
+      if(Array.isArray(a)!==Array.isArray(b))return false;
+      const keys=Object.keys(a);
+      return keys.length===Object.keys(b).length&&keys.every(k=>Object.hasOwn(b,k)&&equal(a[k],b[k],Array.isArray(a)?key:k));
+    }
+    const matches=equal(actual,expected);return {equal:matches,maxAbsoluteError};
+  }
+
+  function runAnalysis(task) {
+    if (!task || task.schemaVersion !== 1 || !task.input) throw new Error('不支持的任务格式。');
+    if (!Array.isArray(task.operations) || task.operations.length > 8) {
+      throw new Error('处理操作必须是数组，且最多 8 步。');
+    }
+    const input = task.input;
+    const n0 = number(input.n0, '首项下标', { integer: true });
+    const warnings = [];
+    let normalized, values, label, formula;
+    if (input.kind === 'manual') {
+      values = Array.isArray(input.values)
+        ? input.values.map((value, i) => number(value, `第 ${i + 1} 个样值`))
+        : parseSequence(input.text);
+      if (!values.length || values.length > MAX_SAMPLES) throw new Error(`序列长度必须在 1 到 ${MAX_SAMPLES} 之间。`);
+      const fs = sampleRate(input.sampleRateHz, true);
+      normalized = { kind: 'manual', values: [...values], n0, sampleRateHz: fs };
+      label = '手动离散序列';
+      formula = 'x[n] 由输入样值和首项下标确定';
+      if (fs === null) warnings.push('未设置采样率：按离散下标 n 查看；使用时间轴前请补充采样率。');
+    } else if (input.kind === 'generated') {
+      const count = number(input.count, '样本数', { integer: true });
+      if (count < 1 || count > MAX_SAMPLES) throw new Error(`样本数必须在 1 到 ${MAX_SAMPLES} 之间。`);
+      const fs = sampleRate(input.sampleRateHz);
+      const amplitude = number(input.amplitude, '幅值');
+      const offset = number(input.offset, '直流偏置');
+      const waveform = input.waveform;
+      normalized = { kind: 'generated', waveform, sampleRateHz: fs, count, n0, amplitude, offset };
+      if (waveform === 'sine' || waveform === 'cosine' || waveform === 'multitone') {
+        const frequencyHz = number(input.frequencyHz, '频率');
+        const phaseDeg = number(input.phaseDeg, '相位');
+        if (frequencyHz < 0) throw new Error('发生器频率不能小于 0 Hz。');
+        Object.assign(normalized, { frequencyHz, phaseDeg });
+        const wave = waveform === 'cosine' ? Math.cos : Math.sin;
+        values = Array.from({ length: count }, (_, i) => amplitude * wave(2 * Math.PI * frequencyHz * (n0 + i) / fs + phaseDeg * Math.PI / 180) + offset);
+        label = waveform === 'sine' ? '正弦序列' : '余弦序列';
+        formula = `x[n] = A · ${waveform === 'sine' ? 'sin' : 'cos'}(2π f n / fs + φ) + D`;
+        if (frequencyHz >= fs / 2) warnings.push('频率达到或超过 fs/2：当前样值可能出现混叠或奈奎斯特点的特殊情况，请勿将图中变化直接视为原始频率。');
+        if(waveform==='multitone') {
+          const frequency2Hz=number(input.frequency2Hz,'第二频率'),amplitude2=number(input.amplitude2,'第二幅值');
+          if(frequency2Hz<0)throw new Error('第二频率不能小于 0。');
+          Object.assign(normalized,{frequency2Hz,amplitude2});
+          values=values.map((v,i)=>v+amplitude2*Math.sin(2*Math.PI*frequency2Hz*(n0+i)/fs));
+          label='双频叠加';formula='x[n] = A sin(2πfn/fs+φ) + A₂ sin(2πf₂n/fs) + D';
+          if(frequency2Hz>=fs/2)warnings.push('第二频率达到或超过奈奎斯特频率，可能混叠。');
+        }
+      } else if(waveform==='noise') {
+        const seed=number(input.seed,'随机种子',{integer:true});
+        if(seed<0||seed>4294967295)throw new Error('种子范围为 0 到 4294967295。');
+        normalized.seed=seed;let state=seed;
+        values=Array.from({length:count},()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return amplitude*(2*state/4294967296-1)+offset;});
+        label='可重复均匀噪声';formula='x[n] = A · U[−1,1) + D；固定种子的伪随机序列';
+      } else if (waveform === 'impulse' || waveform === 'step') {
+        const position = number(input.position, '发生位置', { integer: true });
+        normalized.position = position;
+        values = Array.from({ length: count }, (_, i) => amplitude * (waveform === 'impulse' ? Number(n0 + i === position) : Number(n0 + i >= position)) + offset);
+        label = waveform === 'impulse' ? '脉冲序列' : '阶跃序列';
+        formula = waveform === 'impulse' ? 'x[n] = A · δ[n − k] + D' : 'x[n] = A · u[n − k] + D';
+        if (waveform === 'impulse' && (position < n0 || position > n0 + count - 1)) warnings.push('脉冲位置在当前下标范围之外，窗口内只显示直流偏置。');
+      } else throw new Error('不支持的信号类型。');
+    } else throw new Error('不支持的信号来源。');
+
+    if (!Number.isSafeInteger(n0 + values.length - 1)) throw new Error('序列下标超出安全整数范围。');
+    if (values.some(value => !Number.isFinite(value))) throw new Error('参数过大，生成了非有限数值，请减小参数。');
+    const fs = normalized.sampleRateHz;
+    if (fs !== null && (!Number.isFinite(n0 / fs) || !Number.isFinite((n0 + values.length - 1) / fs))) {
+      throw new Error('采样率与下标组合超出时间轴数值范围。');
+    }
+    const original = { values, n0, sampleRateHz: fs, label, formula };
+    statistics(values);
+    const processed = processOperations(original, task.operations);
+    return {
+      task: { schemaVersion: 1, input: normalized, operations: processed.operations },
+      signal: processed.signal, original, steps: processed.steps, analyses: processed.analyses,
+      metrics: statistics(processed.signal.values), warnings,
+    };
+  }
+  return Object.freeze({ MAX_SAMPLES, parseSequence, parseCSV, runAnalysis, compareResults });
+});
+
+</script>
+<script>
+/* Course-week capability profiles shared by the full lab and standalone pages. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.CourseCapabilities = api;
+})(globalThis, function () {
+  'use strict';
+  const names = Object.freeze({input:'信号生成 / 手动序列 / 采样参数',inspect:'波形与统计读数',transform:'缩放 / 移位 / 反折',convolve:'线性卷积',difference:'差分方程与初始历史',dtft:'有限序列 DTFT',response:'系统频率响应',zplane:'零极点 / 因果 ROC',inverse_z:'典型逆 z 变换',zvalue:'有限序列 z 求值',spectrum:'DFT / FFT 频谱',filter:'FIR / 二阶 IIR 滤波'});
+  const additions = {5:['input','inspect'],6:['transform'],7:['convolve'],8:['difference'],9:['dtft','response'],10:['zplane','inverse_z','zvalue'],11:['spectrum'],12:['filter'],13:[]};
+  const examples = {
+    5:['请生成 100Hz 正弦信号，采样率 1000Hz，样本数 64','输入序列 [1,2,1]，首项下标 -1','查看能量和 RMS'],
+    6:['请把当前序列放大 2 倍，然后移位 -3','反折','查看能量'],
+    7:['请计算卷积 [1,2,1]，首项下标 -1','按页面设置做卷积','卷积改成 [1,0,-1]'],
+    8:['请做差分方程，b=[1]，a=[1,-0.5]，输出历史 [2]','根据页面设置做差分方程','差分方程改成 b=[1]，a=[1,-0.8]'],
+    9:['请分析当前序列 DTFT','查看系统频率响应，b=[0.5,0.5]，a=[1]','卷积 [1,1] 然后 DTFT'],
+    10:['请查看零极点，b=[1]，a=[1,-0.5]','逆 z 变换，p=0.5，左边','计算 z 变换，模 1，辐角 90度'],
+    11:['请用 Hann 窗查看 256 点 FFT','频谱改成 128 点 DFT，矩形窗','查看频谱，先去均值'],
+    12:['请用 31 抽头 Hamming 做 0.2kHz 低通，再看频谱','截止改成 150Hz','换成二阶 IIR'],
+    13:['请用 31 抽头 Hamming 做 0.2kHz 低通，再看频谱','截止改成 150Hz','换成二阶 IIR'],
+  };
+  function forWeek(week = 13) {
+    if (!Number.isInteger(week) || week < 5 || week > 13) throw new Error('课程周次必须为 5—13。');
+    const allowed = Object.keys(additions).filter(w => Number(w) <= week).flatMap(w => additions[w]);
+    return Object.freeze({week,allowed:Object.freeze(allowed),waveforms:Object.freeze(['sine','cosine','impulse','step',...(week >= 12 ? ['multitone','noise'] : [])]),examples:Object.freeze(examples[week]),summary:allowed.map(type => names[type]).join('；')});
+  }
+  function requireCapability(profile,type) {
+    if (!profile.allowed.includes(type)) throw new Error(`第 ${profile.week} 周尚未开放“${names[type] ?? type}”。本周支持：${profile.summary}。`);
+  }
+  return Object.freeze({forWeek,requireCapability,names});
+});
+
+</script>
+<script>
+/* Bounded offline language parser. All plans still use the shared DSP validator. */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./dsp.js'), require('./capabilities.js'));
+  else root.RuleAssistant = factory(root.DSP, root.CourseCapabilities);
+})(globalThis, function (DSP, Capabilities) {
+  'use strict';
+  const help = '支持自然句式，例如“请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱”。也可说“截止改成 150Hz”“换成二阶 IIR”。未注明的参数沿用页面设置；修改时优先沿用上次操作。';
+  const decimal = '[+-]?(?:\\d+\\.?\\d*|\\.\\d+)(?:e[+-]?\\d+)?';
+  const frequencyPattern = () => new RegExp(`(${decimal})\\s*(kHz|Hz|千赫兹|赫兹)`, 'gi');
+  const modifying = /改成|改为|修改|换成|换为|切换|改用|换用|调整|改到/;
+  const windowPattern = /hamming(?:\s*窗)?|hann(?:\s*窗)?|汉明窗?|海明窗?|汉宁窗?|汉恩窗?|矩形窗|rectangular(?:\s*窗)?/gi;
+  const filler = /当前的|当前|按照页面设置|按页面设置|根据页面设置|页面设置|窗函数|设计窗|分析窗|读取|生成|设置|输入|序列|波形|参数|以及|和|按|根据|请问|请|麻烦|帮我|给我|对当前的信号|对当前信号|当前的信号|当前信号|这个信号|对信号|信号|上一次|上一个|上次|上个|最近的|最近|截止频率|截止|频率|滤波器|滤波|抽头数|点数|设置为|设为|设置|修改为|修改成|修改|调整为|调整到|调整|切换成|切换为|改成|改为|换成|换为|改用|换用|改到|使用|采用|应用|进行|做|设计|计算|分析|绘制|画出|查看|看看|看|画|一个|一下|的|用|为|是|把|将|先|再/g;
+
+  function splitCommands(text) {
+    // Separators inside a sequence, e.g. [1, 2, 1], are data, not instructions.
+    const commands = []; let start = 0, depth = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '[') depth++;
+      if (text[i] === ']') depth--;
+      if (depth < 0) throw new Error('序列方括号不匹配。');
+      if (depth) continue;
+      const separator = text.slice(i).match(/^(?:[;；\n]+|[,，]?\s*(?:然后再?|接着|随后|之后|并且|并|再))/);
+      if (!separator) continue;
+      const command = text.slice(start, i).trim();
+      if (command) commands.push(command);
+      i += separator[0].length - 1; start = i + 1;
+    }
+    if (depth) throw new Error('序列方括号不匹配。');
+    const last = text.slice(start).trim();
+    if (last) commands.push(last);
+    else if (start > 0) throw new Error('连接词之后还缺少操作，请补全要求。');
+    if (!commands.length || commands.length > 4) throw new Error('每次请输入 1—4 个操作，多步用“然后”连接。');
+    return commands;
+  }
+
+  function tokens(command) {
+    let remaining = command;
+    return {
+      take(pattern, label, convert = m => m[0]) {
+        const found = [];
+        remaining = remaining.replace(pattern, (...args) => {
+          found.push(convert(args)); return ' ';
+        });
+        if (found.length > 1 && new Set(found.map(String)).size > 1) throw new Error(`${label}出现多个不同值，请明确选择一个。`);
+        return found[0];
+      },
+      finish() {
+        const rest = remaining.replace(filler, '').replace(/[\s,，。.!！?？:：=、]/g, '');
+        if (rest) throw new Error(`还有未理解的内容“${rest}”。请说明操作与参数；频率请带 Hz 或 kHz 单位。`);
+      },
+    };
+  }
+
+  function windowName(token) {
+    if (/hamming|汉明|海明/i.test(token)) return 'hamming';
+    if (/hann|汉宁|汉恩/i.test(token)) return 'hann';
+    return 'rectangular';
+  }
+
+  function filterOperation(command, previous, settings) {
+    const reader = tokens(command), explicit = {};
+    explicit.cutoffHz = reader.take(frequencyPattern(), '截止频率', m => Number(m[1]) * (/^k|千/i.test(m[2]) ? 1000 : 1));
+    explicit.response = reader.take(/低通|高通/g, '响应类型', m => m[0] === '低通' ? 'lowpass' : 'highpass');
+    explicit.family = reader.take(/FIR|IIR|Butterworth|巴特沃斯/gi, '滤波器类别', m => /^fir$/i.test(m[0]) ? 'fir' : 'iir');
+    explicit.taps = reader.take(/(\d+)\s*(?:个\s*)?(?:抽头|taps?)/gi, '抽头数', m => Number(m[1]));
+    const prefixedTaps = reader.take(/(?:抽头数|抽头|taps?)\s*(?:设为|改成|改为|为|=)?\s*(\d+)/gi, '抽头数', m => Number(m[1]));
+    if (explicit.taps !== undefined && prefixedTaps !== undefined && explicit.taps !== prefixedTaps) throw new Error('抽头数不一致。');
+    explicit.taps ??= prefixedTaps;
+    explicit.window = reader.take(windowPattern, '设计窗', m => windowName(m[0]));
+    const order = reader.take(/(\d+|二|两)\s*阶/g, '滤波器阶数', m => /二|两/.test(m[1]) ? 2 : Number(m[1]));
+    reader.finish();
+    const sources = {};
+    function choose(key, fallback) {
+      if (explicit[key] !== undefined) { sources[key] = '文字'; return explicit[key]; }
+      if (previous && previous[key] !== undefined) { sources[key] = '上次操作'; return previous[key]; }
+      if (settings && settings[key] !== undefined) { sources[key] = '页面设置'; return settings[key]; }
+      if (fallback !== undefined) { sources[key] = '默认值'; return fallback; }
+      throw new Error(key === 'cutoffHz' ? '请补充截止频率，例如 200 Hz，或填写页面的截止频率。' : '请选择低通或高通。');
+    }
+    // A design window or tap count explicitly selects the supported FIR method.
+    if (explicit.family === undefined && (explicit.taps !== undefined || explicit.window !== undefined)) explicit.family = 'fir';
+    const op = {type:'filter', family:choose('family', 'fir'), response:choose('response'), cutoffHz:choose('cutoffHz')};
+    if (op.family === 'fir') {
+      if (order !== undefined) {
+        if (explicit.taps !== undefined && explicit.taps !== order + 1) throw new Error('FIR 阶数等于抽头数减 1，请核对这两个参数。');
+        explicit.taps = order + 1;
+      }
+      op.taps = choose('taps', 51); op.window = choose('window', 'hamming');
+    } else {
+      if (order !== undefined && order !== 2) throw new Error('当前 IIR 实现固定为二阶 Butterworth；其他阶数尚未实现。');
+      if (explicit.taps !== undefined || explicit.window !== undefined) throw new Error('抽头数和设计窗用于 FIR；二阶 Butterworth IIR 无这两个参数。');
+    }
+    return {operation:op, sources};
+  }
+
+  function spectrumOperation(command, previous, settings, signal) {
+    const reader = tokens(command), explicit = {};
+    reader.take(/频谱|傅里叶变换|频域/g, '频谱操作', () => true);
+    explicit.method = reader.take(/FFT|DFT/gi, '计算方法', m => m[0].toLowerCase());
+    explicit.nfft = reader.take(/(\d+)\s*点/g, '变换点数', m => Number(m[1]));
+    const prefixed = reader.take(/点数\s*(?:设为|改成|改为|为|=)?\s*(\d+)/g, '变换点数', m => Number(m[1]));
+    if (explicit.nfft !== undefined && prefixed !== undefined && explicit.nfft !== prefixed) throw new Error('变换点数不一致。');
+    explicit.nfft ??= prefixed;
+    explicit.window = reader.take(windowPattern, '分析窗', m => windowName(m[0]));
+    explicit.removeMean = reader.take(/不去均值|保留均值|去均值/g, '去均值选项', m => m[0] === '去均值');
+    reader.finish();
+    const sources = {};
+    function choose(key, fallback) {
+      if (explicit[key] !== undefined) {sources[key] = '文字'; return explicit[key];}
+      if (previous && previous[key] !== undefined) {sources[key] = '上次操作'; return previous[key];}
+      if (settings && settings[key] !== undefined) {sources[key] = '页面设置'; return settings[key];}
+      sources[key] = key === 'nfft' ? '按信号长度' : '默认值'; return fallback;
+    }
+    return {operation:{type:'spectrum',method:choose('method', 'fft'),window:choose('window', 'hann'),
+      nfft:choose('nfft', 2 ** Math.ceil(Math.log2(signal.values.length))),removeMean:choose('removeMean', false)},sources};
+  }
+
+  function simpleOperation(command, previous, settings = {}) {
+    const reader = tokens(command);
+    if (/DTFT/i.test(command)) {
+      reader.take(/\bDTFT\b/gi, '操作'); reader.finish(); return {type:'dtft'};
+    }
+    if (/卷积|系统响应/.test(command)) {
+      reader.take(/卷积|系统响应/g, '操作', () => true);
+      const kernel = reader.take(/\[([^\]]*)\]/g, '卷积序列', m => DSP.parseSequence(m[1]));
+      const n0 = reader.take(/(?:首项下标|起始下标|n0|n₀)\s*(?:为|=)?\s*([+-]?\d+)/gi, '响应起始下标', m => Number(m[1]));
+      reader.finish();
+      if (!kernel && !previous?.kernel && !settings.kernel) throw new Error('请提供卷积的 h 序列，例如“卷积 [1,2,1]”，或填写页面冲激响应。');
+      return {type:'convolve',kernel:kernel ?? previous?.kernel ?? settings.kernel,n0:n0 ?? previous?.n0 ?? settings.n0 ?? 0};
+    }
+    if (/放大|缩放|增益/.test(command)) {
+      const gain = reader.take(new RegExp(`(?:放大|缩放|增益)\\s*(?:改成|改为|设为|为|到|=)?\\s*(${decimal})\\s*倍?`, 'gi'), '增益', m => Number(m[1]));
+      reader.finish(); if (gain === undefined) throw new Error('请提供数值增益。');
+      return {type:'transform',gain,shift:previous?.shift ?? 0,reverse:previous?.reverse ?? false};
+    }
+    if (/移位|平移/.test(command)) {
+      const shift = reader.take(/(?:移位|平移)\s*(?:改成|改为|为|=)?\s*([+-]?\d+)\s*(?:个?样点)?/g, '移位量', m => Number(m[1]));
+      reader.finish(); if (shift === undefined) throw new Error('请提供整数移位量。');
+      return {type:'transform',gain:previous?.gain ?? 1,shift,reverse:previous?.reverse ?? false};
+    }
+    if (/反折|反转/.test(command)) {
+      reader.take(/反折|反转/g, '操作', () => true); reader.finish();
+      return {type:'transform',gain:previous?.gain ?? 1,shift:previous?.shift ?? 0,reverse:true};
+    }
+    throw new Error(`未识别到支持的操作。${help}`);
+  }
+
+  function inputPlan(command, current) {
+    const reader=tokens(command), sources={};
+    const inherited=current.kind==='generated'?current:{kind:'generated',waveform:'sine',sampleRateHz:current.sampleRateHz ?? 1000,count:current.values?.length ?? 64,n0:current.n0,frequencyHz:50,amplitude:1,phaseDeg:0,offset:0,position:0};
+    const input={...inherited};
+    const take=(key,pattern,convert=m=>Number(m[1]))=>{const value=reader.take(pattern,key,convert);if(value!==undefined){input[key]=value;sources[key]='文字';}return value;};
+    const fs=take('sampleRateHz',new RegExp(`(?:采样率|fs)\\s*(?:改成|改为|为|=)?\\s*(${decimal})\\s*(kHz|Hz|千赫兹|赫兹)`,'gi'),m=>Number(m[1])*(/^k|千/i.test(m[2])?1000:1));
+    take('n0',/(?:首项下标|起始下标|n0|n₀)\s*(?:改成|改为|为|=)?\s*([+-]?\d+)/gi);
+    const sequence=reader.take(/(?:输入(?:序列)?|序列|样值)\s*(\[[^\]]*\])/g,'样值',m=>DSP.parseSequence(m[1]));
+    if(sequence){
+      reader.finish();return {input:{kind:'manual',values:sequence,n0:input.n0,sampleRateHz:fs ?? current.sampleRateHz},sources:{values:'文字',n0:sources.n0 ?? '当前输入',sampleRateHz:sources.sampleRateHz ?? '当前输入'}};
+    }
+    const wave=reader.take(/正弦|余弦|单位脉冲|单位阶跃|脉冲|阶跃|双频|均匀噪声|噪声/g,'波形',m=>({'正弦':'sine','余弦':'cosine','单位脉冲':'impulse','脉冲':'impulse','单位阶跃':'step','阶跃':'step','双频':'multitone','噪声':'noise','均匀噪声':'noise'})[m[0]]);
+    if(wave){input.waveform=wave;sources.waveform='文字';}
+    take('count',/(?:样本数|样值数|N)\s*(?:改成|改为|为|=)?\s*(\d+)/g);
+    take('amplitude',new RegExp(`(?:幅值|幅度)\\s*(?:改成|改为|为|=)?\\s*(${decimal})`,'gi'));
+    take('phaseDeg',new RegExp(`相位\\s*(?:改成|改为|为|=)?\\s*(${decimal})\\s*(?:度|°)`,'gi'));
+    take('offset',new RegExp(`(?:偏置|直流)\\s*(?:改成|改为|为|=)?\\s*(${decimal})`,'gi'));
+    take('position',/(?:发生位置|位置)\s*(?:改成|改为|为|=)?\s*([+-]?\d+)/g);
+    take('frequency2Hz',new RegExp(`第二频率\\s*(?:为|=)?\\s*(${decimal})\\s*(kHz|Hz|千赫兹|赫兹)`,'gi'),m=>Number(m[1])*(/^k|千/i.test(m[2])?1000:1));
+    take('amplitude2',new RegExp(`第二幅值\\s*(?:为|=)?\\s*(${decimal})`,'gi'));
+    take('seed',/(?:随机种子|种子)\s*(?:为|=)?\s*(\d+)/g);
+    const frequency=reader.take(frequencyPattern(),'信号频率',m=>Number(m[1])*(/^k|千/i.test(m[2])?1000:1));
+    if(frequency!==undefined){input.frequencyHz=frequency;sources.frequencyHz='文字';}
+    reader.finish();
+    if(!Object.keys(sources).length)throw new Error('请描述波形或待修改的信号参数。');
+    if(current.kind==='manual'&&!wave){
+      if(Object.keys(sources).some(key=>!['sampleRateHz','n0'].includes(key)))throw new Error('当前是手动序列；生成信号时请注明正弦、余弦、脉冲或阶跃。');
+      return {input:{...current,n0:input.n0,sampleRateHz:input.sampleRateHz},sources};
+    }
+    input.frequency2Hz ??= 300;input.amplitude2 ??= .5;input.seed ??= 42;input.position ??= 0;
+    return {input,sources:{...sources,other:'当前输入'}};
+  }
+
+  function systemOperation(command,kind,previous,settings={}) {
+    const reader=tokens(command), explicit={},sources={};
+    reader.take(/差分方程|差分系统|差分|系统频率响应|频率响应|系统频响|频响|零极点|因果\s*ROC|ROC|稳定性/gi,'操作',()=>true);
+    for(const key of ['b','a'])explicit[key]=reader.take(new RegExp(`\\b${key}\\s*=\\s*(\\[[^\\]]*\\])`,'gi'),key,m=>DSP.parseSequence(m[1]));
+    if(kind==='difference') {
+      explicit.xHistory=reader.take(/(?:输入历史|xHistory)\s*(?:为|=)?\s*(\[[^\]]*\])/gi,'输入历史',m=>DSP.parseSequence(m[1]));
+      explicit.yHistory=reader.take(/(?:输出历史|yHistory)\s*(?:为|=)?\s*(\[[^\]]*\])/gi,'输出历史',m=>DSP.parseSequence(m[1]));
+      explicit.tail=reader.take(/(?:尾部补零|补零)\s*(\d+)\s*项?/g,'补零长度',m=>Number(m[1]));
+      if(reader.take(/零初始(?:条件|历史)?/g,'初始条件',()=>true)){explicit.xHistory=[];explicit.yHistory=[];}
+    }
+    reader.finish();
+    const choose=(key,fallback)=>{
+      if(explicit[key]!==undefined){sources[key]='文字';return explicit[key];}
+      if(previous?.[key]!==undefined){sources[key]='上次操作';return previous[key];}
+      if(settings[key]!==undefined){sources[key]='页面设置';return settings[key];}
+      if(fallback!==undefined){sources[key]='默认值';return fallback;}
+      throw new Error(`请提供 ${key} 系数，例如 b=[1]，a=[1,-0.5]，或填写页面参数。`);
+    };
+    const operation={type:kind,b:choose('b'),a:choose('a')};
+    if(kind==='difference')Object.assign(operation,{xHistory:choose('xHistory',[]),yHistory:choose('yHistory',[]),tail:choose('tail',0)});
+    return {operation,sources};
+  }
+
+  function zOperation(command,kind,previous,settings={}) {
+    const reader=tokens(command),explicit={},sources={};
+    if(kind==='inverse_z') {
+      reader.take(/典型逆\s*z\s*变换|逆\s*z\s*变换/gi,'操作',()=>true);
+      explicit.pole=reader.take(new RegExp(`(?:极点|p)\\s*(?:改成|改为|为|=)?\\s*(${decimal})`,'gi'),'极点',m=>Number(m[1]));
+      explicit.side=reader.take(/左边|反因果|右边|因果/g,'方向',m=>/左边|反因果/.test(m[0])?'left':'right');
+    } else {
+      reader.take(/(?:有限序列)?\s*z\s*(?:变换|求值)/gi,'操作',()=>true);
+      explicit.radius=reader.take(new RegExp(`(?:模|半径|radius)\\s*(?:改成|改为|为|=)?\\s*(${decimal})`,'gi'),'z 的模',m=>Number(m[1]));
+      explicit.angleDeg=reader.take(new RegExp(`(?:辐角|角度)\\s*(?:改成|改为|为|=)?\\s*(${decimal})\\s*(?:度|°)`,'gi'),'辐角',m=>Number(m[1]));
+    }
+    reader.finish();
+    const operation={type:kind};
+    for(const key of kind==='inverse_z'?['pole','side']:['radius','angleDeg']){
+      if(explicit[key]!==undefined){sources[key]='文字';operation[key]=explicit[key];}
+      else if(previous?.[key]!==undefined){sources[key]='上次操作';operation[key]=previous[key];}
+      else if(settings[key]!==undefined){sources[key]='页面设置';operation[key]=settings[key];}
+      else throw new Error(`请补充 ${key}，或填写本周页面参数。`);
+    }
+    return {operation,sources};
+  }
+
+  function kindOf(command,edit,task) {
+    if(/差分/.test(command))return 'difference';
+    if(/频率响应|系统频响|频响/.test(command))return 'response';
+    if(/零极点|ROC|稳定性/i.test(command))return 'zplane';
+    if(/逆\s*z\s*变换/i.test(command))return 'inverse_z';
+    if(/z\s*(?:变换|求值)/i.test(command))return 'zvalue';
+    if(/DTFT/i.test(command))return 'dtft';
+    if(/FFT|DFT|频谱|傅里叶变换|频域|\d+\s*点|点数/i.test(command))return 'spectrum';
+    if(/低通|高通|FIR|IIR|Butterworth|巴特沃斯|滤波|截止|抽头|阶/i.test(command))return 'filter';
+    if(/卷积|系统响应/.test(command))return 'convolve';
+    if(/放大|缩放|增益|移位|平移|反折|反转/.test(command))return 'transform';
+    if(/正弦|余弦|脉冲|阶跃|双频|噪声|采样率|样本数|幅值|幅度|相位|偏置|直流|发生位置|信号频率|输入\s*\[|输入序列|序列\s*\[/i.test(command))return 'input';
+    if(/能量|RMS|均值|峰峰值|摘要|统计|查看波形/i.test(command))return 'inspect';
+    if(edit&&frequencyPattern().test(command))return task.operations.some(op=>op.type==='filter')?'filter':'input';
+    if(edit&&new RegExp(windowPattern.source,'i').test(command))return task.operations.findLast(op=>['filter','spectrum'].includes(op.type))?.type;
+    return null;
+  }
+
+  function plan(text,currentTask,settings={},profile=Capabilities.forWeek()) {
+    try {
+      if(typeof text!=='string'||!text.trim()||text.length>500)throw new Error('请输入 1—500 字的实验要求。');
+      if(/不要|别|不做|不使用|不采用|不是|无需|取消|或者|否则|如果|除非|而不是/.test(text))throw new Error('请直接说明要执行的操作；当前离线助手尚不处理否定、条件或二选一要求。');
+      let task=DSP.runAnalysis(currentTask).task;
+      for(const op of task.operations)Capabilities.requireCapability(profile,op.type);
+      const changes=[];
+      for(const command of splitCommands(text.trim())) {
+        const edit=modifying.test(command),kind=kindOf(command,edit,task);
+        if(!kind)throw new Error(`未识别到支持的操作。本周支持：${profile.summary}。`);
+        Capabilities.requireCapability(profile,kind);
+        if(kind==='input') {
+          const parsed=inputPlan(command,task.input);
+          if(parsed.input.kind==='generated'&&!profile.waveforms.includes(parsed.input.waveform))throw new Error(`第 ${profile.week} 周尚未开放该发生器波形。`);
+          task=DSP.runAnalysis({...task,input:parsed.input}).task;
+          changes.push({mode:'input',index:null,operation:{type:'input',input:task.input},sources:parsed.sources});continue;
+        }
+        if(kind==='inspect') {
+          const reader=tokens(command);reader.take(/能量|RMS|均值|峰峰值|摘要|统计|查看波形/gi,'指标',()=>true);reader.finish();
+          changes.push({mode:'inspect',index:null,operation:{type:'inspect'},sources:{parameters:'当前任务'}});continue;
+        }
+        const index=edit?task.operations.findLastIndex(op=>op.type===kind):task.operations.length;
+        if(index<0)throw new Error(`当前没有可修改的“${Capabilities.names[kind]}”，请先新增并执行一次。`);
+        const previous=edit?task.operations[index]:null;
+        let parsed;
+        if(kind==='filter')parsed=filterOperation(command,previous,settings?.filter);
+        else if(kind==='spectrum') {
+          const before=DSP.runAnalysis({...task,operations:task.operations.slice(0,index)}).signal;
+          parsed=spectrumOperation(command,previous,settings?.spectrum,before);
+        } else if(['difference','response','zplane'].includes(kind))parsed=systemOperation(command,kind,previous,settings?.[kind]);
+        else if(['inverse_z','zvalue'].includes(kind))parsed=zOperation(command,kind,previous,settings?.[kind]);
+        else parsed={operation:simpleOperation(command,previous,settings?.[kind]),sources:{parameters:previous?'文字 / 上次操作':settings?.[kind]?'文字 / 页面设置':'文字'}};
+        const next=[...task.operations];
+        if(edit)next[index]=parsed.operation;else next.push(parsed.operation);
+        task=DSP.runAnalysis({...task,operations:next}).task;
+        changes.push({mode:edit?'replace':'append',index,operation:task.operations[index],sources:parsed.sources});
+      }
+      return {status:'ready',message:'已理解并校验，尚未执行。请核对操作和参数来源；执行后统一更新波形与读数。',task,changes};
+    } catch(error) {return {status:'needs_input',message:`请补充或修正：${error.message}`,task:null,changes:[]};}
+  }
+
+  function describeOperation(op) {
+    const list=values=>values.slice(0,8).join(', ')+(values.length>8?' …':'');
+    switch(op.type) {
+      case 'input': {
+        const input=op.input;
+        if(input.kind==='manual')return `手动序列 [${list(input.values)}]，N=${input.values.length}，n₀=${input.n0}，fs=${input.sampleRateHz??'未设置'}${input.sampleRateHz===null?'':' Hz'}`;
+        const names={sine:'正弦',cosine:'余弦',impulse:'脉冲',step:'阶跃',multitone:'双频叠加',noise:'均匀噪声'};
+        return `${names[input.waveform]}，fs=${input.sampleRateHz} Hz，N=${input.count}，n₀=${input.n0}，幅值=${input.amplitude}，偏置=${input.offset}`
+          +(input.frequencyHz===undefined?'':`，f=${input.frequencyHz} Hz，相位=${input.phaseDeg}°`)
+          +(input.position===undefined?'':`，发生位置=${input.position}`)
+          +(input.frequency2Hz===undefined?'':`，第二频率=${input.frequency2Hz} Hz，第二幅值=${input.amplitude2}`)
+          +(input.seed===undefined?'':`，种子=${input.seed}`);
+      }
+      case 'inspect':return '查看当前波形、均值、RMS、峰峰值和有限窗口能量';
+      case 'transform':return `${op.reverse?'反折 → ':''}移位 ${op.shift} → 增益 ${op.gain}`;
+      case 'convolve':return `卷积：h=[${list(op.kernel)}]，n₀=${op.n0}`;
+      case 'difference':return `差分方程：b=[${list(op.b)}]，a=[${list(op.a)}]，输入历史=[${list(op.xHistory)}]，输出历史=[${list(op.yHistory)}]，补零 ${op.tail} 项`;
+      case 'dtft':return '当前序列 DTFT（257 个频率点）';
+      case 'response':return `系统响应：b=[${list(op.b)}]，a=[${list(op.a)}]`;
+      case 'zplane':return `零极点：b=[${list(op.b)}]，a=[${list(op.a)}]`;
+      case 'inverse_z':return `典型逆 z：p=${op.pole}，${op.side==='right'?'右边':'左边'}序列`;
+      case 'zvalue':return `z 求值：模 ${op.radius}，辐角 ${op.angleDeg}°`;
+      case 'spectrum':return `${op.method.toUpperCase()}：${op.nfft} 点，${op.window} 窗${op.removeMean?'，先去均值':''}`;
+      case 'filter':return `${op.family.toUpperCase()} ${op.response==='lowpass'?'低通':'高通'}：截止 ${op.cutoffHz} Hz${op.family==='fir'?`，${op.taps} 抽头，${op.window} 窗`:'，二阶 Butterworth'}`;
+      default:return op.type;
+    }
+  }
+  function previewText(result) {
+    const labels={family:'滤波器类别',response:'响应类型',cutoffHz:'截止频率',taps:'抽头数',window:'窗函数',method:'计算方法',nfft:'点数',removeMean:'去均值',parameters:'参数',values:'样值',sampleRateHz:'采样率',n0:'首项下标',count:'样本数',frequencyHz:'信号频率',other:'其他参数'};
+    return result.message+(result.task?'\n\n'+result.changes.map(change=>{
+      const sources=Object.entries(change.sources).map(([key,source])=>`${labels[key]??key}：${source}`).join('；');
+      const title=change.mode==='input'?'更新输入':change.mode==='inspect'?'读取实验结果':`${change.mode==='replace'?'修改':'新增'}第 ${change.index+1} 步`;
+      return `${title}：${describeOperation(change.operation)}\n${sources}`;
+    }).join('\n\n'):'');
+  }
+  return Object.freeze({plan,help,describeOperation,previewText});
+});
+
+</script>
+<script>
+/* UI extensions; every experiment ultimately calls DSP.runAnalysis(task). */
+const Workbench = (() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  let api, operations = [], pendingPlan = null;
+  const number = id => $(id).value;
+  const node = (tag, text, className) => {
+    const e = document.createElement(tag); e.textContent = text;
+    if (className) e.className = className; return e;
+  };
+  const controls = document.createElement('section');
+  controls.className = 'card workbench-controls';
+  controls.innerHTML = `<h2>处理与实验</h2><p class="field-help">操作按加入顺序执行。清空后恢复原始信号。</p>
+    <details open><summary>序列变换</summary><div class="field-pair"><label>增益<input id="op-gain" type="number" value="1" step="any"></label><label>移位 k<input id="op-shift" type="number" value="0" step="1"></label></div>
+    <label class="check-label"><input id="op-reverse" type="checkbox"> 先反折，再移位</label><button type="button" id="add-transform">加入变换</button></details>
+    <details><summary>线性卷积 / FIR 系统</summary><label>冲激响应 h[n]<input id="conv-kernel" value="1, 1, 1"></label><label>h 的首项下标<input id="conv-n0" type="number" value="0" step="1"></label><button type="button" id="add-convolve">加入线性卷积</button><p class="field-help">观察单位脉冲与阶跃输入的输出；卷积保留完整尾部。有限窗口外按零处理。</p></details>
+    <details><summary>差分方程与初始条件</summary><label>分子 b₀, b₁, …<input id="diff-b" value="1"></label><label>分母 a₀, a₁, …<input id="diff-a" value="1, -0.5"></label><label>输入历史 x[n₀−1], x[n₀−2], …<input id="diff-x" placeholder="留空表示零"></label><label>输出历史 y[n₀−1], y[n₀−2], …<input id="diff-y" placeholder="留空表示零"></label><label>末尾补零项数<input id="diff-tail" type="number" min="0" value="0"></label><button type="button" id="add-difference">加入差分系统</button><p class="field-help">系数按延迟 z⁻¹ 升幂排列；这是按历史值向前递推的因果实现。零输入响应包含窗口前输入历史的贡献。</p></details>
+    <details><summary>DTFT 与系统频率响应</summary><button type="button" id="add-dtft">分析当前序列 DTFT</button><label>系统分子 b<input id="response-b" value="0.5, 0.5"></label><label>系统分母 a<input id="response-a" value="1"></label><button type="button" id="add-response">查看 H(eʲω)</button><p class="field-help">在 −π 到 π 的 257 个点求和。零幅度附近相位留空；相位为主值，未展开。</p></details>
+    <details><summary>z 变换 / ROC / 零极点</summary><label>系统分子 b（最高二阶）<input id="z-b" value="1"></label><label>系统分母 a<input id="z-a" value="1, -0.5"></label><button type="button" id="add-zplane">查看零极点与因果 ROC</button>
+    <label>典型 X(z)=1/(1−p z⁻¹) 的实极点 p<input id="z-pole" type="number" value="0.5" step="any"></label><label>选择 ROC / 序列方向<select id="z-side"><option value="right">右边：|z| &gt; |p|</option><option value="left">左边：|z| &lt; |p|</option></select></label><button type="button" id="add-inverse">显示典型逆 z 变换</button>
+    <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
+    <details><summary>DFT / FFT 与频谱</summary><div class="field-pair"><label>算法<select id="spectrum-method"><option value="fft">FFT（基 2）</option><option value="dft">直接 DFT</option></select></label><label>变换点数<input id="spectrum-nfft" type="number" value="256" min="1" max="4096"></label></div><label>分析窗<select id="spectrum-window"><option value="rectangular">矩形窗</option><option value="hann">周期 Hann</option><option value="hamming">周期 Hamming</option></select></label><label class="check-label"><input id="spectrum-mean" type="checkbox"> 先去均值</label><button type="button" id="add-spectrum">分析当前单边频谱</button><p class="field-help">FFT 点数为 2 的幂；可补零，不截断数据。幅度按窗相干增益标定，DC 和奈奎斯特不加倍。</p></details>
+    <details><summary>FIR / Butterworth IIR 设计</summary><label>实现<select id="filter-family"><option value="fir">FIR 窗函数法</option><option value="iir">二阶 Butterworth IIR</option></select></label><label>响应<select id="filter-response"><option value="lowpass">低通</option><option value="highpass">高通</option></select></label><label>截止频率 / Hz<input id="filter-cutoff" type="number" value="100" step="any"></label><label>FIR 抽头数（奇数）<input id="filter-taps" type="number" value="51" min="3" max="129" step="2"></label><label>FIR 设计窗<select id="filter-window"><option value="hamming">对称 Hamming</option><option value="hann">对称 Hann</option><option value="rectangular">矩形窗</option></select></label><button type="button" id="add-filter">设计并滤波</button><button type="button" id="dual-demo">载入双频低通实验</button><p class="field-help">FIR 截止处约 −6 dB，Butterworth 截止处 −3 dB；两者的截止定义不同。</p></details>
+    <details><summary>保存、复现与本地服务</summary><button type="button" id="export-task">下载任务 JSON</button><button type="button" id="export-original">下载原始 CSV</button><button type="button" id="export-output">下载输出 CSV</button><button type="button" id="export-report">下载实验报告</button><label>恢复任务 JSON<input id="task-file" type="file" accept=".json,application/json"></label><button type="button" id="import-task">导入并复现</button><button type="button" id="local-check">本地工具自检</button><p id="local-service-note" class="field-help">双击模式使用全部离线功能。运行 npm start 后在本地网页使用工具自检；在“云端模型助手”配置 OpenAI / DeepSeek。</p></details>
+    <!-- EXTRA_CONTROLS -->
+    <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
+  document.querySelector('.controls').after(controls);
+  // Keep signal setup and operations in a single left column.
+  const column = document.createElement('div'); column.className = 'input-column';
+  const inputCard = document.querySelector('.controls'); inputCard.before(column); column.append(inputCard, controls);
+  const csv = document.createElement('details'); csv.className = 'csv-import';
+  csv.innerHTML = `<summary>导入 CSV 文件</summary><p class="field-help">UTF-8、逗号分隔、最多 4096 行 / 1 MiB。列号从 1 开始。时间列单位为秒，必须等间隔；导入后以 n₀/fs 为时间原点。</p>
+    <label>CSV 文件<input id="csv-file" type="file" accept=".csv,text/csv"></label>
+    <div class="field-pair"><label>数值列<input id="csv-value" type="number" min="1" value="1"></label><label>时间列（可空）<input id="csv-time" type="number" min="1"></label></div>
+    <label class="check-label"><input id="csv-header" type="checkbox" checked> 首行为表头</label><button type="button" id="import-csv">读取 CSV</button>`;
+  $('manual-fields').after(csv);
+  const analyses = document.createElement('article'); analyses.className = 'card analysis-card'; analyses.id = 'analyses';
+  document.querySelector('.task-details').before(analyses);
+  const assistant=document.createElement('section');assistant.className='card analysis-card';
+  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持常用自然句式与 Hz / kHz。支持信号、序列、差分、DTFT / z、频谱和滤波。未注明参数沿用页面设置。离线解析，先预览再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱"></textarea><div class="assistant-examples"><button type="button" data-assistant-example="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱">试一个滤波实验</button><button type="button" data-assistant-example="截止改成 150Hz">修改截止频率</button><button type="button" data-assistant-example="换成二阶 IIR">改用 IIR</button></div><p id="assistant-context" class="field-help"></p><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan" role="status" aria-live="polite">${RuleAssistant.help}</pre>`;
+  document.querySelector('.results').append(assistant);
+
+  const describeOperation=RuleAssistant.describeOperation;
+  function assistantSettings() {
+    return {
+      convolve:{kernel:number('conv-kernel'),n0:number('conv-n0')},
+      difference:{b:number('diff-b'),a:number('diff-a'),xHistory:number('diff-x'),yHistory:number('diff-y'),tail:number('diff-tail')},
+      response:{b:number('response-b'),a:number('response-a')},
+      zplane:{b:number('z-b'),a:number('z-a')},
+      inverse_z:{pole:number('z-pole'),side:number('z-side')},
+      zvalue:{radius:number('z-radius'),angleDeg:number('z-angle')},
+      filter:{family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')},
+      spectrum:{method:number('spectrum-method'),nfft:number('spectrum-nfft'),window:number('spectrum-window'),removeMean:$('spectrum-mean').checked},
+    };
+  }
+  const previewText=RuleAssistant.previewText;
+  function syncSettings(ops) {
+    const fields={convolve:{kernel:'conv-kernel',n0:'conv-n0'},difference:{b:'diff-b',a:'diff-a',xHistory:'diff-x',yHistory:'diff-y',tail:'diff-tail'},response:{b:'response-b',a:'response-a'},zplane:{b:'z-b',a:'z-a'},inverse_z:{pole:'z-pole',side:'z-side'},zvalue:{radius:'z-radius',angleDeg:'z-angle'}};
+    for(const [type,ids] of Object.entries(fields)){
+      const op=ops.findLast(item=>item.type===type);if(!op)continue;
+      for(const [key,id] of Object.entries(ids))if(op[key]!==undefined)$(id).value=Array.isArray(op[key])?op[key].join(', '):op[key];
+    }
+    const filter=ops.findLast(op=>op.type==='filter'),spectrum=ops.findLast(op=>op.type==='spectrum');
+    if(filter)for(const [key,id] of Object.entries({family:'filter-family',response:'filter-response',cutoffHz:'filter-cutoff',taps:'filter-taps',window:'filter-window'})) {
+      if(filter[key]!==undefined)$(id).value=filter[key];
+    }
+    if(spectrum){
+      for(const [key,id] of Object.entries({method:'spectrum-method',nfft:'spectrum-nfft',window:'spectrum-window'}))$(id).value=spectrum[key];
+      $('spectrum-mean').checked=spectrum.removeMean;
+    }
+  }
+  function list() {
+    $('operation-list').replaceChildren(...operations.map(op => node('li', describeOperation(op))));
+  }
+  function add(op) {
+    if (operations.length >= 8) throw new Error('最多 8 个处理步骤，请先清空。');
+    const next = [...operations, op];
+    const task = api.readTask(); task.operations = next;
+    api.runTask(task);
+  }
+  function action(id, fn) {
+    $(id).addEventListener('click', async () => {
+      try { await fn(); } catch (error) { api.status(`${error.message} 当前结果保持不变。`, 'error'); }
+    });
+  }
+  function connect(controller) {
+    api = controller;
+    window.DSPLab = controller;
+    action('add-transform', () => add({type:'transform', gain:number('op-gain'), shift:number('op-shift'), reverse:$('op-reverse').checked}));
+    action('clear-operations', () => { operations = []; list(); api.run(); });
+    action('import-csv', async () => {
+      const file = $('csv-file').files[0];
+      if (!file) throw new Error('请先选择 CSV 文件。');
+      if (file.size > 1024 * 1024) throw new Error('CSV 文件不能超过 1 MiB。');
+      const parsed = DSP.parseCSV(await file.text(), {valueColumn:Number(number('csv-value')) - 1, timeColumn:number('csv-time') === '' ? null : Number(number('csv-time')) - 1, header:$('csv-header').checked});
+      api.runTask({schemaVersion:1,input:{kind:'manual',values:parsed.values,n0:0,sampleRateHz:parsed.sampleRateHz ?? $('sample-rate').value},operations:[]});
+      if (parsed.timeStart !== null) api.status(`已导入 ${parsed.values.length} 项，fs = ${parsed.sampleRateHz} Hz。原时间首项 ${parsed.timeStart} s 已平移至 0 s。`, 'warning');
+    });
+    action('add-convolve', () => add({type:'convolve',kernel:number('conv-kernel'),n0:number('conv-n0')}));
+    action('add-difference', () => add({type:'difference',b:number('diff-b'),a:number('diff-a'),xHistory:number('diff-x'),yHistory:number('diff-y'),tail:number('diff-tail')}));
+    action('add-dtft', () => add({type:'dtft'}));
+    action('add-response', () => add({type:'response',b:number('response-b'),a:number('response-a')}));
+    action('add-zplane', () => add({type:'zplane',b:number('z-b'),a:number('z-a')}));
+    action('add-inverse', () => add({type:'inverse_z',pole:number('z-pole'),side:number('z-side')}));
+    action('add-zvalue', () => add({type:'zvalue',radius:number('z-radius'),angleDeg:number('z-angle')}));
+    action('add-spectrum', () => add({type:'spectrum',method:number('spectrum-method'),window:number('spectrum-window'),nfft:number('spectrum-nfft'),removeMean:$('spectrum-mean').checked}));
+    action('add-filter', () => add({type:'filter',family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')}));
+    action('dual-demo', () => api.runTask({schemaVersion:1,input:{kind:'generated',waveform:'multitone',sampleRateHz:1024,count:512,n0:0,frequencyHz:50,amplitude:1,phaseDeg:0,offset:0,frequency2Hz:300,amplitude2:.5},operations:[{type:'filter',family:'fir',response:'lowpass',cutoffHz:100,taps:51,window:'hamming'}]}));
+    action('export-task', () => download('dsp-task.json',JSON.stringify(api.getResult().task,null,2),'application/json'));
+    const csvText=signal=>`${signal.sampleRateHz===null?'n,value':'n,time_s,value'}\n`+signal.values.map((v,i)=>[signal.n0+i,...(signal.sampleRateHz===null?[]:[(signal.n0+i)/signal.sampleRateHz]),v].join(',')).join('\n')+'\n';
+    action('export-original', () => download('dsp-original.csv',csvText(api.getResult().original),'text/csv'));
+    action('export-output', () => download('dsp-output.csv',csvText(api.getResult().signal),'text/csv'));
+    action('export-report', () => {
+      const r=api.getResult();
+      download('dsp-report.md',`# DSP 实验报告\n\n来源：v1.0.0 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
+    });
+    action('import-task', async () => {
+      const file=$('task-file').files[0];if(!file)throw new Error('请选择任务 JSON。');
+      if(file.size>1024*1024)throw new Error('任务文件不能超过 1 MiB。');
+      api.runTask(JSON.parse(await file.text()));
+    });
+    action('assistant-prepare', () => {
+      pendingPlan=RuleAssistant.plan($('assistant-text').value,api.readTask(),assistantSettings());
+      $('assistant-plan').textContent=previewText(pendingPlan);
+      $('assistant-execute').disabled=pendingPlan.status!=='ready';
+    });
+    action('assistant-execute', () => {
+      if(pendingPlan?.status!=='ready')return;
+      const applied=pendingPlan;
+      api.runTask(applied.task);
+      $('assistant-plan').textContent=previewText({...applied,message:'已执行并更新结果。可以继续输入“截止改成 150Hz”等要求。'});
+    });
+    const invalidate=()=>{if(pendingPlan){pendingPlan=null;$('assistant-execute').disabled=true;$('assistant-plan').textContent='参数或命令已修改，请重新解析预览。';}};
+    $('assistant-text').addEventListener('input',invalidate);
+    $('signal-form').addEventListener('input',invalidate);
+    controls.addEventListener('input',invalidate);
+    document.querySelectorAll('[data-assistant-example]').forEach(button=>button.addEventListener('click',()=>{
+      $('assistant-text').value=button.dataset.assistantExample;invalidate();$('assistant-text').focus();
+    }));
+    action('local-check', async () => {
+      if(!['http:','https:'].includes(location.protocol))throw new Error('请先在项目目录运行 npm start，再打开 http://127.0.0.1:8787 使用本地工具。');
+      const originalTask=api.getResult().task;
+      const post=async(path,body)=>{
+        const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});
+        const data=await response.json();if(!response.ok)throw new Error(data.error?.message||'本地服务调用失败');return data;
+      };
+      const stored=await post('/api/signals',{input:originalTask.input});
+      const run=await post('/api/agent/runs',{mode:'mock',signalId:stored.signalId,operations:originalTask.operations});
+      const response=await fetch('/api/results/'+encodeURIComponent(run.resultId));
+      if(!response.ok)throw new Error('本地结果读取失败。');
+      const remote=await response.json(),local=DSP.runAnalysis(originalTask);
+      const comparison=DSP.compareResults(remote,local);
+      if(!comparison.equal)throw new Error('本地工具与页面结果超出数值容差。');
+      $('local-service-note').textContent=`本地模拟工具调用完成：${run.trace.map(t=>t.name).join(' → ')}。${remote.signal.values.length} 项输出及分析与网页在 1e−10 相对/绝对容差内一致（最大绝对误差 ${comparison.maxAbsoluteError.toExponential(2)}）。未调用云模型，未使用 API Key。`;
+    });
+    // EXTRA_ACTIONS
+  }
+
+  function polePlot(item) {
+    const radius=Math.max(1.3,...[...item.zeros,...item.poles].map(p=>Math.hypot(p.real,p.imag)*1.3));
+    const scale=100/radius,x=v=>150+v*scale,y=v=>130-v*scale;
+    const parts=[`<circle cx="150" cy="130" r="${scale}" fill="none" stroke="#bdcbd8" stroke-dasharray="4 4"/><path d="M25 130H275M150 5V255" stroke="#bdcbd8"/>`];
+    item.zeros.forEach(p=>parts.push(`<circle cx="${x(p.real)}" cy="${y(p.imag)}" r="5" fill="none" stroke="#287d76" stroke-width="2"/>`));
+    item.poles.forEach(p=>parts.push(`<path d="M${x(p.real)-5} ${y(p.imag)-5}l10 10m-10 0l10 -10" stroke="#ae4949" stroke-width="2"/>`));
+    parts.push(`<text x="275" y="145" font-size="12">Re</text><text x="155" y="14" font-size="12">Im</text><text x="${x(1)}" y="146" font-size="11">1</text>`);
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 300 270');svg.style.maxHeight='270px';svg.setAttribute('role','img');svg.setAttribute('aria-label','零极点图：圆圈为零点，叉号为极点，虚线为单位圆');svg.innerHTML=parts.join('');analyses.append(svg);
+    table(['类型','实部','虚部'],[...item.zeros.map(p=>['零点',p.real,p.imag]),...item.poles.map(p=>['极点',p.real,p.imag])]);
+  }
+  function chart(xs,ys,xLabel,yLabel,comparison=null) {
+    const finite=[...ys,...(comparison??[])].filter(v=>v!==null&&Number.isFinite(v));
+    if (!finite.length) {analyses.append(node('p','当前频率点无有限响应。'));return;}
+    const lo=Math.min(0,...finite), hi=Math.max(0,...finite), span=hi-lo||1;
+    const x=i=>48+500*i/Math.max(1,xs.length-1),y=v=>22+140*(hi-v)/span;
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 590 205');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${yLabel} 对 ${xLabel}`);
+    let drawing='',active=false;
+    ys.forEach((v,i)=>{if(v===null||!Number.isFinite(v)){active=false;return;}drawing+=`${active?'L':'M'}${x(i)},${y(v)} `;active=true;});
+    const parts=[];
+    if(comparison)parts.push(`<path d="${comparison.map((v,i)=>`${i?'L':'M'}${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="#b37735" stroke-dasharray="4 3" stroke-width="1.4"/>`);
+    parts.push(`<path d="${drawing}" fill="none" stroke="#287d76" stroke-width="1.8"/>`);
+    [0,.5,1].forEach(f=>{const i=Math.round((xs.length-1)*f);parts.push(`<text x="${x(i)}" y="184" text-anchor="middle" font-size="12" fill="#52677c">${Number(xs[i].toPrecision(5))}</text>`);});
+    for(const [v,yy] of [[hi,22],[lo,162]])parts.push(`<text x="43" y="${yy}" text-anchor="end" font-size="11" fill="#52677c">${Number(v.toPrecision(3))}</text>`);
+    svg.innerHTML=parts.join('');analyses.append(node('p',`${yLabel} · ${xLabel}`),svg);
+  }
+  function table(headings, rows) {
+    const table = document.createElement('table'); const head = document.createElement('tr');
+    headings.forEach(h=>head.append(node('th',h))); table.append(head);
+    rows.forEach(row=>{const tr=document.createElement('tr'); row.forEach(v=>tr.append(node('td',typeof v==='number'? Number(v.toPrecision(6)):v)));table.append(tr);});
+    const wrap=document.createElement('div'); wrap.className='analysis-scroll';wrap.append(table);analyses.append(wrap);
+  }
+  function download(name,content,type) {
+    const url=URL.createObjectURL(new Blob([content],{type:type+';charset=utf-8'}));
+    const link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function render(result) {
+    document.dispatchEvent(new Event("dsp-result"));
+    if(pendingPlan)$('assistant-plan').textContent='结果已更新；再次执行前请重新解析预览。';
+    pendingPlan=null;
+    if($('assistant-execute'))$('assistant-execute').disabled=true;
+    const latestFilter=result.task.operations.findLast(op=>op.type==='filter');
+    $('assistant-context').textContent=latestFilter?`当前任务共 ${result.task.operations.length} 步；最近滤波器为 ${describeOperation(latestFilter)}。说“改成…”会修改该步骤并重算后续操作。`:'当前没有滤波步骤。可以描述新实验，也可以先在左侧调整滤波与频谱设置。';
+    analyses.replaceChildren(node('h2', '实验读数'));
+    const source = result.task.input;
+    if (source.frequencyHz !== undefined) {
+      const ratio = source.frequencyHz / source.sampleRateHz;
+      const alias = Math.abs(((ratio + 0.5) % 1 + 1) % 1 - 0.5) * source.sampleRateHz;
+      let period = null;
+      for (let p = 1; p <= 4096; p++) if (Math.abs(ratio * p - Math.round(ratio * p)) < 1e-10) { period = p; break; }
+      analyses.append(node('p', `折叠到 [0, fs/2] 的频率：${alias.toPrecision(6)} Hz；离散基频周期候选：${period ?? '在 4096 项内未找到'}。候选由 f/fs 数值近似求得；零振幅、直流和退化采样可能有更短周期。`));
+    }
+    analyses.append(node('p', `当前有限窗口能量：${result.metrics.energy.toPrecision(6)}。这不是无限周期信号的总能量；无限非零周期信号通常总能量发散。`));
+    if (result.steps.length) analyses.append(node('p', `原始 ${result.original.values.length} 项 → ${result.steps.length} 个操作 → 当前 ${result.signal.values.length} 项；上方时域图与摘要显示最终输出。`));
+    for (const item of result.analyses.filter(item=>item.type==='difference')) {
+      analyses.append(node('h3','零状态 + 零输入 = 全响应'));
+      const rows = item.zeroState.slice(0,8).map((v,i)=>[i,v,item.zeroInput[i],v+item.zeroInput[i]]);
+      table(['相对窗口下标','零状态','零输入','全响应'],rows);
+      analyses.append(node('p',`零历史冲激响应前 8 项：${item.impulse.slice(0,8).join(', ')}；阶跃响应前 8 项：${item.step.slice(0,8).join(', ')}。仅观察 32 项，有限窗口有界不代表 BIBO 稳定。`));
+    }
+    for (const item of result.analyses.filter(item=>['dtft','response'].includes(item.type))) {
+      analyses.append(node('h3',item.type==='dtft'?'有限序列 DTFT':'系统单位圆上的代数响应'));
+      chart(item.omega.map(w=>w/Math.PI),item.magnitude,'ω / π','幅度');
+      chart(item.omega.map(w=>w/Math.PI),item.phase,'ω / π','相位 / rad');
+      if (item.convolutionError !== null && item.convolutionError !== undefined) analyses.append(node('p',`卷积定理 max |Y − X·H| = ${item.convolutionError.toExponential(3)}（完整有限序列，无 IIR 截断）。`));
+      analyses.append(node('p',item.type==='dtft'?'实序列满足 X(−ω)=X*(ω)，幅度偶对称、相位在非零幅度处呈奇对称（允许 2π 分支差）。':'只有 ROC 包含单位圆时，这一代数值才是冲激响应的 DTFT；单位圆极点处留空。'));
+    }
+    for(const item of result.analyses.filter(item=>['zplane','inverse_z','zvalue'].includes(item.type))) {
+      if(item.type==='zplane') {
+        analyses.append(node('h3','H(z) 零极点（约去公共因子后）'));
+        polePlot(item);
+        analyses.append(node('p',`${item.roc}；零状态、因果系统 ${item.causalStable?'BIBO 稳定':'不是 BIBO 稳定'}。约去 ${item.cancelled.length} 对公共零极点（数值容差 1e−9）；约消不代表内部初始状态稳定。`));
+      } else if(item.type==='inverse_z') {
+        analyses.append(node('h3','同一表达式，不同 ROC'));
+        chart(item.values.map((_,i)=>item.n0+i),item.values,'n','逆变换样值');
+        analyses.append(node('p',`X(z)=1/(1−${item.pole} z⁻¹)，ROC：${item.roc}。x[n]=${item.side==='right'?'pⁿ u[n]':'−pⁿ u[−n−1]'}；${item.side==='right'?'因果':'反因果'}，${item.stable?'ROC 包含单位圆，绝对可和':'ROC 不包含单位圆，非绝对可和'}。图中只显示 16 项，公式定义无限序列。`));
+      } else analyses.append(node('p',`有限序列 X(z)，|z|=${item.radius}、arg z=${item.angleDeg}°：实部 ${item.real.toPrecision(6)}，虚部 ${item.imag.toPrecision(6)}。|z|=1 时等于对应频率的 DTFT。`));
+    }
+    for(const item of result.analyses.filter(item=>item.type==='spectrum')) {
+      analyses.append(node('h3',`${item.method.toUpperCase()} · 单边幅度谱`));
+      chart(item.frequency,item.amplitude,item.frequencyUnit,'幅度');
+      chart(item.frequency,item.phase,item.frequencyUnit,'相位 / rad');
+      analyses.append(node('p',`最高频点：${item.peak?`${item.peak.frequency.toPrecision(6)} ${item.frequencyUnit}，幅度 ${item.peak.amplitude.toPrecision(6)}`:'无显著非零幅度'}。频点间隔 ${item.binSpacing.toPrecision(5)}，原始记录 fs/N=${item.recordSpacing.toPrecision(5)} ${item.frequencyUnit}；窗相干增益 ${item.coherentGain.toPrecision(5)}。补零仅加密频点，实际分辨能力仍受记录时长与窗主瓣影响。非整周期、靠近 DC/奈奎斯特或相邻频率干涉时，峰值幅度可能有偏差。`));
+    }
+    for(const item of result.analyses.filter(item=>item.type==='filter')) {
+      analyses.append(node('h3',`${item.family.toUpperCase()} · 滤波前后`));
+      chart(item.after.values.map((_,i)=>item.after.n0+i),item.after.values,'n','时域：绿色输出 / 橙色虚线输入',item.before.values);
+      chart(item.afterSpectrum.frequency,item.afterSpectrum.amplitude,'Hz','频谱：绿色输出 / 橙色虚线输入',item.beforeSpectrum.amplitude);
+      chart(item.response.omega.map(w=>w/Math.PI),item.response.magnitude,'ω / π','滤波器幅频响应');
+      analyses.append(node('p',item.delaySamples===null?'IIR 为非线性相位，群延迟随频率变化；不要把输入输出逐点相减当作误差。':'FIR 线性相位，通带群延迟 '+item.delaySamples+' 个样点。图中保留实际延迟，没有平移输出。'));
+      analyses.append(node('p','从零历史开始滤波，初始段包含瞬态；输出与输入等长，末尾尚未衰减的响应不额外输出。频谱对照使用周期 Hann 窗和窗增益修正。'));
+      const detail=document.createElement('details');detail.append(node('summary','查看滤波器系数'),node('pre',JSON.stringify({b:item.b,a:item.a},null,2)));analyses.append(detail);
+    }
+    // EXTRA_RENDER
+  }
+  return {connect, render, readOperations:() => operations, reset:() => {operations=[];list();}, loadOperations:ops => {operations=ops;syncSettings(ops);list();}};
+})();
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const form = $('signal-form');
+  let lastResult = null;
+  let lastPlotWidth = 0;
+  const fields = { waveform: 'sine', frequency: 50, phase: 0, amplitude: 1, offset: 0,
+    'sample-rate': 1000, 'sample-count': 64, 'start-index': 0, position: 0, frequency2:300, amplitude2:0.5, 'noise-seed':42, sequence: '1, 2, 1' };
+  const format = value => value === 0 ? '0' : Number(value.toPrecision(6)).toString();
+  const source = () => form.elements.source.value;
+
+  function updateFields() {
+    const manual = source() === 'manual';
+    $('generated-fields').hidden = manual;
+    $('manual-fields').hidden = !manual;
+    $('count-field').hidden = manual;
+    const periodic = ['sine', 'cosine', 'multitone'].includes($('waveform').value);
+    $('periodic-fields').hidden = !periodic;
+    $('position-field').hidden = !['impulse','step'].includes($('waveform').value);
+    $('second-tone').hidden = $('waveform').value !== 'multitone';
+    $('noise-fields').hidden = $('waveform').value !== 'noise';
+    $('run-button').textContent = manual ? '读取并绘图 →' : '生成并绘图 →';
+    $('sampling-help').textContent = manual
+      ? '采样率可留空，按下标查看；最多 4096 个样值。'
+      : '最多 4096 个样值。采样时间为 t = n / fs。';
+  }
+
+  function readTask() {
+    const input = { kind: source(), n0: $('start-index').value, sampleRateHz: $('sample-rate').value };
+    if (input.kind === 'manual') input.text = $('sequence').value;
+    else Object.assign(input, {
+      waveform: $('waveform').value, frequencyHz: $('frequency').value, phaseDeg: $('phase').value,
+      amplitude: $('amplitude').value, offset: $('offset').value, count: $('sample-count').value, position: $('position').value, frequency2Hz:$('frequency2').value, amplitude2:$('amplitude2').value, seed:$('noise-seed').value,
+    });
+    return { schemaVersion: 1, input, operations: Workbench.readOperations() };
+  }
+
+  function status(message, kind = '') {
+    $('status').textContent = message;
+    $('status').className = `status ${kind}`;
+  }
+
+  function plot(result) {
+    const { values, n0, sampleRateHz: fs } = result.signal;
+    const time = $('axis-mode').value === 'time' && fs !== null;
+    const width = Math.max(240, Math.round($('waveform-plot').getBoundingClientRect().width));
+    lastPlotWidth = width;
+    const compact = width < 440;
+    const height = compact ? 270 : 350, left = compact ? 44 : 66, right = 24, top = 25, bottom = 48;
+    $('waveform-plot').setAttribute('viewBox', `0 0 ${width} ${height}`);
+    const iw = width - left - right, ih = height - top - bottom;
+    let low = Math.min(0, result.metrics.min), high = Math.max(0, result.metrics.max);
+    const pad = Math.max((high - low) * 0.13, high === low ? 1 : Number.MIN_VALUE);
+    low -= pad; high += pad;
+    const x = i => left + (values.length === 1 ? iw / 2 : i * iw / (values.length - 1));
+    const y = value => top + (high - value) * ih / (high - low);
+    const parts = [`<title id="plot-title">${result.signal.label}时域图</title><desc id="plot-description">共 ${values.length} 个样值，下标从 ${n0} 到 ${n0 + values.length - 1}；${time ? '横轴为秒' : '横轴为离散下标'}。</desc>`];
+    for (let i = 0; i <= 4; i++) {
+      const v = low + (high - low) * i / 4, yy = y(v);
+      parts.push(`<line x1="${left}" y1="${yy}" x2="${width-right}" y2="${yy}" stroke="#e7edf4"/><text x="${left-12}" y="${yy+4}" text-anchor="end" fill="#697e92" font-size="12">${format(v)}</text>`);
+    }
+    parts.push(`<line x1="${left}" y1="${y(0)}" x2="${width-right}" y2="${y(0)}" stroke="#a6b6c8"/>`);
+    const tickCount = Math.min(compact ? 4 : 7, values.length);
+    const ticks = [...new Set(Array.from({ length: tickCount }, (_, i) => Math.round(i * (values.length - 1) / Math.max(1, tickCount - 1))))];
+    for (const i of ticks) {
+      const value = time ? (n0 + i) / fs : n0 + i;
+      parts.push(`<text x="${x(i)}" y="${height-23}" text-anchor="middle" fill="#697e92" font-size="12">${format(value)}</text>`);
+    }
+    if (values.length <= 128) {
+      values.forEach((value, i) => parts.push(`<line x1="${x(i)}" y1="${y(0)}" x2="${x(i)}" y2="${y(value)}" stroke="#aac3e9" stroke-width="1.4"/><circle cx="${x(i)}" cy="${y(value)}" r="${values.length > 64 ? 2.4 : 3.5}" fill="#285ab2"/>`));
+    } else {
+      const path = values.map((value, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(value)}`).join(' ');
+      parts.push(`<path d="${path}" fill="none" stroke="#285ab2" stroke-width="1.8"/>`);
+    }
+    parts.push(`<text x="${width-right}" y="${height-4}" text-anchor="end" font-size="12" fill="#697e92">${time ? 't / s' : 'n'}</text><text x="17" y="16" fill="#697e92" font-size="12">x[n]</text>`);
+    $('waveform-plot').innerHTML = parts.join('');
+    $('plot-style-note').textContent = values.length <= 128 ? '竖线和圆点表示离散样值' : '样值较多，以折线连接显示；未抽取数据';
+  }
+
+  function render(result) {
+    const { signal, metrics, task } = result;
+    const fs = signal.sampleRateHz;
+    const range = `${signal.n0} … ${signal.n0 + metrics.count - 1}`;
+    $('signal-label').textContent = signal.label;
+    $('plot-range').textContent = `n = ${range} · ${metrics.count} 个样值`;
+    $('axis-mode').querySelector('[value="time"]').disabled = fs === null;
+    if (fs === null) $('axis-mode').value = 'index';
+    const display = { count: metrics.count, rate: fs === null ? '未设置' : `${format(fs)} Hz`, range,
+      mean: format(metrics.mean), rms: format(metrics.rms), p2p: format(metrics.peakToPeak), energy: format(metrics.energy) };
+    for (const [key, value] of Object.entries(display)) $(`metric-${key}`).textContent = value;
+    $('formula').textContent = signal.formula;
+    const explanations = {
+      multitone: '两个正弦分量叠加，可以比较低通前后的波形与频谱。',
+      noise: '固定种子得到可重复的均匀伪随机序列；改变首项下标只移动这一段样值。',
+      sine: '观察圆点的位置：每个点都是对正弦信号的一次采样。增大频率，或减小采样率，比较相邻样值的变化。',
+      cosine: '余弦与正弦可以通过相位联系起来。试着修改相位，并观察 n = 0 附近的样值。',
+      impulse: '当 A = 1、D = 0 时，只有 n = k 的样值等于 1，其余为 0。这是移位后的单位脉冲。',
+      step: '当 A = 1、D = 0 时，从 n = k 开始的样值为 1，此前为 0。负下标同样是序列的一部分。',
+      manual: '输入的第一项位于 n₀，后续每项的下标依次加 1。序列的数值和下标需要一起理解。',
+    };
+    $('experiment-explanation').textContent = explanations[task.input.waveform || 'manual'];
+    $('parameter-summary').textContent = `N = ${metrics.count} · n₀ = ${signal.n0}`
+      + (fs === null ? ' · fs 未设置' : ` · fs = ${format(fs)} Hz · Δt = ${format(1 / fs)} s`)
+      + (task.input.frequencyHz === undefined ? '' : ` · f = ${format(task.input.frequencyHz)} Hz`);
+    $('task-json').textContent = JSON.stringify(task, null, 2);
+    $('sample-preview-note').textContent = `显示前 ${Math.min(8, metrics.count)} 项，共 ${metrics.count} 项。`;
+    $('samples-body').replaceChildren(...signal.values.slice(0, 8).map((value, i) => {
+      const row = document.createElement('tr');
+      for (const text of [signal.n0 + i, format(value)]) {
+        const cell = document.createElement('td'); cell.textContent = text; row.append(cell);
+      }
+      return row;
+    }));
+    plot(result);
+    Workbench.render(result);
+    status(result.warnings.length ? result.warnings.join(' ') : `已生成 ${metrics.count} 个样值。图形与指标对应本次成功运行的参数。`, result.warnings.length ? 'warning' : '');
+  }
+
+  function run() {
+    try {
+      const result = DSP.runAnalysis(readTask());
+      render(result);
+      lastResult = result;
+    } catch (error) {
+      status(`${error.message}${lastResult ? ' 图中保留上次成功运行的结果，尚未应用本次输入。' : ''}`, 'error');
+      $('status').focus({ preventScroll: true });
+    }
+  }
+
+  function preset(name) {
+    Workbench.reset();
+    for (const [id, value] of Object.entries(fields)) $(id).value = value;
+    form.elements.source.value = name === 'manual' ? 'manual' : 'generated';
+    if (name === 'impulse' || name === 'step') {
+      $('waveform').value = name; $('start-index').value = -8; $('sample-count').value = 25;
+    } else if (name === 'manual') {
+      $('start-index').value = -1; $('sample-rate').value = '';
+    }
+    $('axis-mode').value = 'index';
+    updateFields(); run();
+  }
+
+  form.addEventListener('submit', event => { event.preventDefault(); run(); });
+  form.addEventListener('input', () => {
+    updateFields();
+    if (lastResult) status('参数已修改，请点击绘图按钮更新。当前图形与指标仍为上次成功结果。', 'pending');
+  });
+  $('axis-mode').addEventListener('change', () => { if (lastResult) plot(lastResult); });
+  $('reset-button').addEventListener('click', () => preset('sine'));
+  document.querySelectorAll('[data-preset]').forEach(button => button.addEventListener('click', () => preset(button.dataset.preset)));
+  const resizePlot = () => {
+    if (lastResult && Math.max(240, Math.round($('waveform-plot').getBoundingClientRect().width)) !== lastPlotWidth) plot(lastResult);
+  };
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resizePlot).observe($('waveform-plot').parentElement);
+  else window.addEventListener('resize', resizePlot);
+  Workbench.connect({
+    runTask(task) {
+      const result = DSP.runAnalysis(task);
+      // Loading the normalized input and operations keeps subsequent edits reproducible.
+      const input = result.task.input;
+      form.elements.source.value = input.kind;
+      $('start-index').value = input.n0; $('sample-rate').value = input.sampleRateHz ?? '';
+      if (input.kind === 'manual') $('sequence').value = input.values.join(', ');
+      else for (const [key, id] of Object.entries({waveform:'waveform',frequencyHz:'frequency',phaseDeg:'phase',amplitude:'amplitude',offset:'offset',count:'sample-count',position:'position',frequency2Hz:'frequency2',amplitude2:'amplitude2',seed:'noise-seed'})) {
+        if (input[key] !== undefined) $(id).value = input[key];
+      }
+      Workbench.loadOperations(result.task.operations);
+      updateFields(); render(result); lastResult = result;
+      return result;
+    }, readTask, getResult: () => lastResult, status, run,
+  });
+  updateFields(); run();
+})();
+
+</script>
+<script>
+/* Cloud inference is opt-in; all DSP tools run on the local backend. */
+(() => {
+  'use strict';
+  const $=id=>document.getElementById(id),api=window.DSPLab;
+  if(!api)return;
+  const panel=document.createElement('section');panel.className='card cloud-panel';
+  const week14=document.body.dataset.courseWeek==='14';
+  panel.innerHTML=`<h2>云端模型助手</h2><p class="field-help">${week14?'第十四周：OpenAI':'第十五周：OpenAI / DeepSeek'}。模型理解实验要求并调用本地 DSP 工具；结果先预览，再应用。</p>
+    <p id="cloud-connection" role="status">正在检查本地服务…</p>
+    <label for="cloud-provider">服务商</label><select id="cloud-provider"><option value="openai">OpenAI</option>${week14?'':'<option value="deepseek">DeepSeek</option>'}</select>
+    <details id="cloud-settings"><summary>模型设置与连接测试</summary>
+    <p class="field-help" id="cloud-endpoint"></p><label for="cloud-model">模型 ID</label><input id="cloud-model" autocomplete="off" spellcheck="false">
+    <label for="cloud-key">API Key（留空保留已保存密钥）</label><input id="cloud-key" type="password" autocomplete="new-password" spellcheck="false">
+    <p class="field-help">仅保存到本机用户目录的 .dsp-agent/providers.json，不进入任务导出。该文件为明文；Unix 文件权限为 600，Windows 沿用用户目录权限。ChatGPT 订阅不含 API 额度。</p>
+    <div class="cloud-actions"><button type="button" id="cloud-save">保存配置</button><button type="button" id="cloud-delete">删除此服务商配置</button><button type="button" id="cloud-test">测试模型与工具</button></div>
+    <p class="field-help">连接测试与实验请求会调用官方 API，可能产生费用。密钥只发送给所选官方服务；信号摘要、处理参数及输入文字会发给模型，原始样值保留在本机。</p></details>
+    <label for="cloud-text">实验要求</label><textarea id="cloud-text" rows="4" maxlength="4000" placeholder="保留当前信号的低频部分，采用二阶 IIR，再比较频谱。请解释选择的参数。"></textarea>
+    <p class="field-help">每次发送当前输入与完整处理步骤，可继续说“截止改为 150 Hz”。需要生成或上传新信号时，先使用左侧输入区。每次最多 6 轮、8 次工具调用、90 秒。</p>
+    <div class="cloud-actions"><button type="button" id="cloud-run">发送给模型并预览</button><button type="button" id="cloud-cancel" disabled>取消请求</button><button type="button" id="cloud-apply" disabled>应用计算结果</button><button type="button" id="cloud-export" disabled>下载模型记录</button></div>
+    <pre id="cloud-output" role="status" aria-live="polite">模型解释供实验参考，以本地计算和教材为准。</pre>`;
+  document.querySelector('.stage').append(panel);
+  let providers=[],available=false,busy=false,controller=null,pending=null,revision=0,record=null;
+  const show=text=>{$('cloud-output').textContent=text;};
+  function buttons(){for(const id of ['cloud-provider','cloud-model','cloud-key','cloud-save','cloud-delete','cloud-test','cloud-run'])$(id).disabled=!available||busy;$('cloud-cancel').disabled=!busy;$('cloud-apply').disabled=!pending||busy;$('cloud-export').disabled=!record||busy;}
+  function invalidate(){revision++;if(pending){pending=null;show('实验参数或要求已修改，请重新发送给模型。');}buttons();}
+  document.addEventListener('input',e=>{invalidate();});
+  document.addEventListener('dsp-result',invalidate);
+  async function request(url,data,signal){const response=await fetch(url,{...(data?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}:{}),signal:signal||AbortSignal.timeout(10000)});let value;try{value=await response.json();}catch{throw new Error('未找到兼容的本地服务，请运行 npm start 并打开终端中的地址。');}if(!response.ok)throw new Error(value.error?.message||'本地服务请求失败。');return value;}
+  function settings(){const p=providers.find(p=>p.id===$('cloud-provider').value);if(!p)return;$('cloud-model').value=p.model;$('cloud-key').value='';$('cloud-endpoint').textContent=p.url;$('cloud-connection').textContent=`本地服务已连接 · ${p.label} ${p.configured?'密钥已保存':'尚未配置密钥'}`;}
+  async function action(fn){if(busy)return;busy=true;controller=new AbortController();buttons();try{await fn(controller.signal);}catch(e){show(controller.signal.aborted?'请求已取消，当前实验保持不变。':e.message);}finally{busy=false;controller=null;buttons();}}
+  $('cloud-provider').addEventListener('change',()=>{invalidate();settings();});
+  $('cloud-save').addEventListener('click',()=>action(async signal=>{invalidate();const data={providerId:$('cloud-provider').value,model:$('cloud-model').value.trim(),apiKey:$('cloud-key').value.trim()};$('cloud-key').value='';providers=(await request('/api/providers',data,signal)).providers;settings();show('配置已保存。点击“测试模型与工具”验证实际调用。');}));
+  $('cloud-delete').addEventListener('click',()=>action(async signal=>{invalidate();providers=(await request('/api/providers',{providerId:$('cloud-provider').value,remove:true},signal)).providers;settings();show('此服务商的本地配置已删除。');}));
+  $('cloud-test').addEventListener('click',()=>action(async signal=>{invalidate();show('正在验证模型与实际 DSP 工具调用…');const r=await request('/api/providers/test',{providerId:$('cloud-provider').value},signal);show(`连接与工具调用通过：${r.providerId} / ${r.model}\n${r.text}\n${r.trace.map(t=>`${t.name}：${t.status}`).join('\n')}`);}));
+  $('cloud-run').addEventListener('click',()=>action(async signal=>{
+    pending=null;record=null;buttons();const text=$('cloud-text').value.trim();if(!text)throw new Error('请先填写实验要求。');
+    const task=DSP.runAnalysis(api.readTask()).task,snapshot=JSON.stringify(api.readTask()),started=revision;
+    show('正在请求模型并执行本地工具；完成后显示预览…');
+    const stored=await request('/api/signals',{input:task.input},signal);
+    const r=await request('/api/agent/runs',{providerId:$('cloud-provider').value,text,signalId:stored.signalId,operations:task.operations},signal);
+    if(signal.aborted)return;
+    if(revision!==started||snapshot!==JSON.stringify(api.readTask()))throw new Error('请求期间实验或要求已改变，本次返回结果已丢弃，请重新发送。');
+    if(r.result){const local=DSP.runAnalysis(r.result.task);if(!DSP.compareResults(local,r.result).equal)throw new Error('本地复算与后端结果不一致，不能应用。');pending={task:r.result.task,snapshot,revision:started};}
+    record={version:'1.0.0',provider:r.providerId,model:r.model,request:text,explanation:r.text,trace:r.trace,task:r.result?.task??null,metrics:r.result?.metrics??null};
+    show(`${r.providerId} / ${r.model}\n\n${r.text}\n\n工具记录：\n${r.trace.map(t=>`${t.name}：${t.status}`).join('\n')||'本次未调用工具'}${r.result?`\n\n待应用步骤：\n${r.result.task.operations.map(RuleAssistant.describeOperation).join('\n')||'原始信号（无处理）'}\n\n计算指标：\n${JSON.stringify(r.result.metrics,null,2)}\n\n确认后点击“应用计算结果”。`:'\n\n模型仅回复文字，请补充要求后再发送。'}`);
+  }));
+  $('cloud-cancel').addEventListener('click',()=>controller?.abort());
+  $('cloud-apply').addEventListener('click',()=>{if(!pending)return;if(pending.revision!==revision||pending.snapshot!==JSON.stringify(api.readTask())){invalidate();return;}const task=pending.task;pending=null;try{api.runTask(task);show(`已应用模型配置，图表与读数已更新。\n\n${record?.explanation||''}`);}catch(e){show(e.message);}buttons();});
+  $('cloud-export').addEventListener('click',()=>{if(!record)return;const url=URL.createObjectURL(new Blob([JSON.stringify(record,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='dsp-model-record.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+  buttons();
+  if(!['http:','https:'].includes(location.protocol)){$('cloud-connection').textContent=`当前是离线 HTML。模型模式：在项目目录运行 npm start，再打开 http://127.0.0.1:8787/${week14?'?week=14':''}。`;return;}
+  request('/api/health').then(h=>{if(!h.cloudProvidersEnabled)throw new Error('请启动 v1.0 本地服务后使用模型模式。');return request('/api/providers');}).then(r=>{providers=r.providers;available=true;settings();buttons();}).catch(e=>{$('cloud-connection').textContent=e.message;});
+})();
+
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ test('local HTTP serves the app, runs tool workflow and rejects cross-origin or 
   const base=`http://127.0.0.1:${server.address().port}`;
   const post=(url,data,headers={})=>fetch(base+url,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(data)});
   assert.equal((await fetch(base)).status,200);
-  assert.equal((await fetch(base+'/api/health').then(r=>r.json())).cloudProvidersEnabled,false);
+  assert.equal((await fetch(base+'/api/health').then(r=>r.json())).cloudProvidersEnabled,true);
   assert.equal((await fetch(base+'/api/tools').then(r=>r.json())).tools.length,2);
   assert.equal((await fetch(base+'/.git/config')).status,404);
   assert.equal((await fetch(base+'/api/health',{headers:{Origin:'https://example.org'}})).status,403);
