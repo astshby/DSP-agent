@@ -1,0 +1,12 @@
+{
+  "name": "dsp-agent-lab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "离线数字信号处理课程实验台",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "build:offline": "node scripts/build-offline.cjs"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}

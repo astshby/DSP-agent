@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152b43">
+  <title>DSP 实验台 · 第五周</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23152b43'/%3E%3Cpath d='M5 16 Q10 1 16 16 T27 16' fill='none' stroke='%237bd1c5' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="src/dsp.js"></script>
+  <script defer src="src/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">∿</span><strong>DSP 实验台</strong><span class="brand-divider">/</span><span>数字信号处理</span></div>
+    <span class="offline"><span aria-hidden="true">●</span> 本地离线运行</span>
+  </header>
+  <main class="workspace">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">实验 01 · 信号与采样</p><h1 id="page-title">从一个离散序列开始</h1><p class="intro-text">生成或输入信号，调整采样参数，观察每一个样值。</p></div>
+      <div class="version"><span>第 1 次提交 / 第 5 周</span><strong>v0.1</strong><small>第一章 · §2-2 / §2-3</small></div>
+    </section>
+
+    <nav class="presets" aria-label="实验预设">
+      <span>快速实验</span>
+      <button type="button" data-preset="sine">正弦采样 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="impulse">单位脉冲 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="step">单位阶跃 <span aria-hidden="true">↗</span></button>
+      <button type="button" data-preset="manual">输入一个序列 <span aria-hidden="true">↗</span></button>
+    </nav>
+
+    <div class="lab-grid">
+      <section class="card controls" aria-labelledby="input-title">
+        <div class="section-heading"><span class="step-number">01</span><h2 id="input-title">设置信号</h2></div>
+        <form id="signal-form" novalidate>
+          <fieldset class="source-options"><legend>信号来源</legend>
+            <label><input type="radio" name="source" value="generated" checked> 信号发生器</label>
+            <label><input type="radio" name="source" value="manual"> 手动序列</label>
+          </fieldset>
+          <div id="generated-fields">
+            <label for="waveform">波形类型</label>
+            <select id="waveform"><option value="sine">正弦信号</option><option value="cosine">余弦信号</option><option value="impulse">脉冲信号</option><option value="step">阶跃信号</option></select>
+            <div id="periodic-fields" class="field-pair">
+              <div><label for="frequency">频率 f <span>Hz</span></label><input id="frequency" type="number" value="50" min="0" step="any"></div>
+              <div><label for="phase">相位 φ <span>°</span></label><input id="phase" type="number" value="0" step="any"></div>
+            </div>
+            <div id="position-field" hidden><label for="position">发生位置 k <span>下标</span></label><input id="position" type="number" value="0" step="1"></div>
+            <div class="field-pair">
+              <div><label for="amplitude">幅值 A</label><input id="amplitude" type="number" value="1" step="any"></div>
+              <div><label for="offset">直流偏置 D</label><input id="offset" type="number" value="0" step="any"></div>
+            </div>
+          </div>
+          <div id="manual-fields" hidden>
+            <label for="sequence">样值 x[n]</label>
+            <textarea id="sequence" rows="4" spellcheck="false" aria-describedby="sequence-help">1, 2, 1</textarea>
+            <p id="sequence-help" class="field-help">用逗号、空格或换行分隔；支持小数和科学计数法。</p>
+          </div>
+          <div class="form-divider"></div>
+          <div class="field-pair">
+            <div><label for="sample-rate">采样率 fs <span>Hz</span></label><input id="sample-rate" type="number" value="1000" step="any" aria-describedby="sampling-help"></div>
+            <div id="count-field"><label for="sample-count">样本数 N</label><input id="sample-count" type="number" value="64" min="1" max="4096" step="1"></div>
+          </div>
+          <label for="start-index">首项下标 n₀</label><input id="start-index" type="number" value="0" step="1">
+          <p id="sampling-help" class="field-help">最多 4096 个样值。采样时间为 t = n / fs。</p>
+          <button class="primary-button" id="run-button" type="submit">生成并绘图 <span aria-hidden="true">→</span></button>
+          <button class="reset-button" id="reset-button" type="button">恢复默认正弦实验</button>
+        </form>
+      </section>
+
+      <section class="stage" aria-label="分析结果">
+        <article class="card plot-card">
+          <div class="plot-header"><div class="section-heading"><span class="step-number">02</span><h2>时域波形</h2></div><span id="signal-label" class="pill">正弦序列</span></div>
+          <div class="chart-toolbar"><span id="plot-range"></span><label for="axis-mode">横轴 <select id="axis-mode"><option value="index">下标 n</option><option value="time">时间 t / s</option></select></label></div>
+          <div class="plot-wrap"><svg id="waveform-plot" viewBox="0 0 900 350" role="img" aria-labelledby="plot-title plot-description"><title id="plot-title">离散信号时域图</title><desc id="plot-description">运行后展示样值。</desc></svg></div>
+          <div class="plot-footer"><span><i class="legend-dot" aria-hidden="true"></i> x[n] · 当前样值</span><span id="plot-style-note">竖线和圆点表示离散样值</span></div>
+        </article>
+        <div id="status" class="status" role="status" aria-live="polite" tabindex="-1">正在准备默认实验…</div>
+        <article class="card explanation"><div class="section-heading"><span class="step-number">03</span><h2>本次实验</h2></div><p id="formula" class="formula"></p><p id="experiment-explanation"></p><p id="parameter-summary" class="parameter-summary"></p></article>
+        <details class="card task-details"><summary>查看本次任务配置 <span>JSON</span></summary><p>界面将参数整理为任务，再调用同一个分析入口。</p><pre id="task-json"></pre></details>
+      </section>
+
+      <aside class="results" aria-label="数据摘要和样值">
+        <section class="card summary-card"><div class="section-heading"><span class="step-number">04</span><h2>数据摘要</h2></div>
+          <div class="sample-total"><strong id="metric-count">—</strong><span>个样值</span></div>
+          <dl class="metrics"><div><dt>采样率</dt><dd id="metric-rate">—</dd></div><div><dt>下标范围</dt><dd id="metric-range">—</dd></div><div><dt>均值</dt><dd id="metric-mean">—</dd></div><div><dt>均方根 RMS</dt><dd id="metric-rms">—</dd></div><div><dt>峰峰值</dt><dd id="metric-p2p">—</dd></div><div><dt>序列能量 Σ|x[n]|²</dt><dd id="metric-energy">—</dd></div></dl>
+          <p class="field-help">指标针对当前有限序列计算。幅度单位沿用输入数据。</p>
+        </section>
+        <section class="card samples-card"><h2>样值预览</h2><p id="sample-preview-note" class="field-help"></p><table><caption class="sr-only">当前信号的前八个样值</caption><thead><tr><th scope="col">下标 n</th><th scope="col">x[n]</th></tr></thead><tbody id="samples-body"></tbody></table></section>
+      </aside>
+    </div>
+    <footer class="lesson-notes"><div><strong>信号</strong><span>数值与下标共同描述一个序列。</span></div><div><strong>采样</strong><span>采样率决定相邻样值的时间间隔。</span></div><div><strong>实验</strong><span>改一个参数，比较波形与数值变化。</span></div></footer>
+    <noscript><p class="status error">此实验台需要浏览器启用 JavaScript。</p></noscript>
+  </main>
+</body>
+</html>
