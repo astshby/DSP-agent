@@ -164,6 +164,10 @@
         signal.values.forEach((v,i)=>{const n=signal.n0+i, scale=v*op.radius**(-n),angle=op.angleDeg*Math.PI/180*n;real+=scale*Math.cos(angle);imag-=scale*Math.sin(angle);});
         if (!Number.isFinite(real)||!Number.isFinite(imag)) throw new Error('z 变换求值溢出，请选择更接近单位圆的 z。');
         analyses.push({type:'zvalue',...op,real,imag});
+      } else if (request.type === 'spectrum') {
+        op={type:'spectrum',method:request.method,window:request.window,nfft:number(request.nfft,'变换点数',{integer:true}),removeMean:request.removeMean===true};
+        if(request.removeMean!==undefined&&typeof request.removeMean!=='boolean')throw new Error('去均值必须是布尔值。');
+        analyses.push({type:'spectrum',...spectrum(signal,op)});
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -246,6 +250,52 @@
     if([...zeros,...poles].some(p=>!Number.isFinite(p.real)||!Number.isFinite(p.imag)))throw new Error('零极点求值溢出。');
     const radius=Math.max(0,...poles.map(p=>Math.hypot(p.real,p.imag)));
     return {zeros,poles,cancelled,causalStable:radius<1,roc:poles.length?`因果 ROC：|z| > ${radius.toPrecision(6)}`:'因果 ROC：整个有限 z 平面（常数传递函数）'};
+  }
+  function windowValues(length,kind) {
+    if(!['rectangular','hann','hamming'].includes(kind))throw new Error('不支持的窗函数。');
+    // Periodic analysis windows; FIR design uses a symmetric window separately.
+    return Array.from({length},(_,i)=>kind==='rectangular'||length===1?1:kind==='hann'?.5-.5*Math.cos(2*Math.PI*i/length):.54-.46*Math.cos(2*Math.PI*i/length));
+  }
+  function fourier(values,method) {
+    const n=values.length,real=[...values],imag=Array(n).fill(0);
+    if(method==='dft') {
+      for(let k=0;k<n;k++){const c=atFrequency(values,0,2*Math.PI*k/n);real[k]=c.real;imag[k]=c.imag;}
+    } else {
+      for(let i=1,j=0;i<n;i++) {
+        let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;
+        if(i<j)[real[i],real[j]]=[real[j],real[i]];
+      }
+      for(let length=2;length<=n;length*=2)for(let start=0;start<n;start+=length)for(let j=0;j<length/2;j++) {
+        const angle=-2*Math.PI*j/length,c=Math.cos(angle),s=Math.sin(angle),u=start+j,v=u+length/2;
+        const tr=c*real[v]-s*imag[v],ti=s*real[v]+c*imag[v];
+        real[v]=real[u]-tr;imag[v]=imag[u]-ti;real[u]+=tr;imag[u]+=ti;
+      }
+    }
+    return {real,imag};
+  }
+  function spectrum(signal,op) {
+    const count=signal.values.length,nfft=op.nfft;
+    if(!['dft','fft'].includes(op.method))throw new Error('请选择 DFT 或 FFT。');
+    if(nfft<count||nfft>MAX_SAMPLES||nfft<1)throw new Error('变换点数须不少于信号长度，且不超过 4096。');
+    if(op.method==='fft'&&(nfft&(nfft-1)))throw new Error('FFT 点数必须是 2 的整数次幂。');
+    if(op.method==='dft'&&nfft>1024)throw new Error('直接 DFT 演示最多 1024 点；大序列请用 FFT。');
+    const weights=windowValues(count,op.window),gain=weights.reduce((a,b)=>a+b,0);
+    const mean=op.removeMean?signal.values.reduce((a,b)=>a+b,0)/count:0;
+    const values=signal.values.map((v,i)=>(v-mean)*weights[i]);values.push(...Array(nfft-count).fill(0));
+    const complex=fourier(values,op.method),bins=Math.floor(nfft/2)+1;
+    const frequency=[],amplitude=[],phase=[],real=[],imag=[];
+    for(let k=0;k<bins;k++) {
+      const angle=-2*Math.PI*k*signal.n0/nfft,c=Math.cos(angle),s=Math.sin(angle);
+      const re=complex.real[k]*c-complex.imag[k]*s,im=complex.real[k]*s+complex.imag[k]*c;
+      real.push(re);imag.push(im);
+      frequency.push(k*(signal.sampleRateHz??1)/nfft);
+      amplitude.push(Math.hypot(re,im)/gain*(k===0||(nfft%2===0&&k===nfft/2)?1:2));
+      phase.push(Math.atan2(im,re));
+    }
+    const peak=Math.max(...amplitude),peakIndex=amplitude.indexOf(peak);
+    return {frequency,amplitude,real,imag,phase:phase.map((p,i)=>amplitude[i]<=peak*1e-10?null:p),window:op.window,method:op.method,nfft,count,
+      coherentGain:gain/count,binSpacing:(signal.sampleRateHz??1)/nfft,recordSpacing:(signal.sampleRateHz??1)/count,
+      frequencyUnit:signal.sampleRateHz===null?'cycles/sample':'Hz',peak:peak>1e-14?{frequency:frequency[peakIndex],amplitude:peak}:null};
   }
   // MATH_FUNCTIONS
 

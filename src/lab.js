@@ -19,6 +19,7 @@ const Workbench = (() => {
     <details><summary>z 变换 / ROC / 零极点</summary><label>系统分子 b（最高二阶）<input id="z-b" value="1"></label><label>系统分母 a<input id="z-a" value="1, -0.5"></label><button type="button" id="add-zplane">查看零极点与因果 ROC</button>
     <label>典型 X(z)=1/(1−p z⁻¹) 的实极点 p<input id="z-pole" type="number" value="0.5" step="any"></label><label>选择 ROC / 序列方向<select id="z-side"><option value="right">右边：|z| &gt; |p|</option><option value="left">左边：|z| &lt; |p|</option></select></label><button type="button" id="add-inverse">显示典型逆 z 变换</button>
     <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
+    <details><summary>DFT / FFT 与频谱</summary><div class="field-pair"><label>算法<select id="spectrum-method"><option value="fft">FFT（基 2）</option><option value="dft">直接 DFT</option></select></label><label>变换点数<input id="spectrum-nfft" type="number" value="256" min="1" max="4096"></label></div><label>分析窗<select id="spectrum-window"><option value="rectangular">矩形窗</option><option value="hann">周期 Hann</option><option value="hamming">周期 Hamming</option></select></label><label class="check-label"><input id="spectrum-mean" type="checkbox"> 先去均值</label><button type="button" id="add-spectrum">分析当前单边频谱</button><p class="field-help">FFT 点数为 2 的幂；可补零，不截断数据。幅度按窗相干增益标定，DC 和奈奎斯特不加倍。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -67,6 +68,7 @@ const Workbench = (() => {
     action('add-zplane', () => add({type:'zplane',b:number('z-b'),a:number('z-a')}));
     action('add-inverse', () => add({type:'inverse_z',pole:number('z-pole'),side:number('z-side')}));
     action('add-zvalue', () => add({type:'zvalue',radius:number('z-radius'),angleDeg:number('z-angle')}));
+    action('add-spectrum', () => add({type:'spectrum',method:number('spectrum-method'),window:number('spectrum-window'),nfft:number('spectrum-nfft'),removeMean:$('spectrum-mean').checked}));
     // EXTRA_ACTIONS
   }
 
@@ -134,6 +136,12 @@ const Workbench = (() => {
         chart(item.values.map((_,i)=>item.n0+i),item.values,'n','逆变换样值');
         analyses.append(node('p',`X(z)=1/(1−${item.pole} z⁻¹)，ROC：${item.roc}。x[n]=${item.side==='right'?'pⁿ u[n]':'−pⁿ u[−n−1]'}；${item.side==='right'?'因果':'反因果'}，${item.stable?'ROC 包含单位圆，绝对可和':'ROC 不包含单位圆，非绝对可和'}。图中只显示 16 项，公式定义无限序列。`));
       } else analyses.append(node('p',`有限序列 X(z)，|z|=${item.radius}、arg z=${item.angleDeg}°：实部 ${item.real.toPrecision(6)}，虚部 ${item.imag.toPrecision(6)}。|z|=1 时等于对应频率的 DTFT。`));
+    }
+    for(const item of result.analyses.filter(item=>item.type==='spectrum')) {
+      analyses.append(node('h3',`${item.method.toUpperCase()} · 单边幅度谱`));
+      chart(item.frequency,item.amplitude,item.frequencyUnit,'幅度');
+      chart(item.frequency,item.phase,item.frequencyUnit,'相位 / rad');
+      analyses.append(node('p',`最高频点：${item.peak?`${item.peak.frequency.toPrecision(6)} ${item.frequencyUnit}，幅度 ${item.peak.amplitude.toPrecision(6)}`:'无显著非零幅度'}。频点间隔 ${item.binSpacing.toPrecision(5)}，原始记录 fs/N=${item.recordSpacing.toPrecision(5)} ${item.frequencyUnit}；窗相干增益 ${item.coherentGain.toPrecision(5)}。补零仅加密频点，实际分辨能力仍受记录时长与窗主瓣影响。非整周期、靠近 DC/奈奎斯特或相邻频率干涉时，峰值幅度可能有偏差。`));
     }
     // EXTRA_RENDER
   }

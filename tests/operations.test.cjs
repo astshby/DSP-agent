@@ -65,3 +65,20 @@ test('z ROC distinguishes left/right inverse and causal stability with delay and
   const z=analyze({type:'zvalue',radius:1,angleDeg:90});near(z.real,1);near(z.imag,-2);
   assert.throws(()=>analyze({type:'zvalue',radius:0,angleDeg:0}));
 });
+
+test('FFT agrees with independent direct DFT, calibrated DC, Nyquist, sine and zero padding', () => {
+  const analyze=(x,more={},n0=0)=>DSP.runAnalysis(task(x,[{type:'spectrum',method:'fft',window:'rectangular',nfft:32,...more}],n0,32)).analyses[0];
+  const x=Array.from({length:32},(_,n)=>2*Math.sin(2*Math.PI*4*n/32)+.25);
+  for(const window of ['rectangular','hann','hamming']) {
+    const fft=analyze(x,{window}),dft=analyze(x,{window,method:'dft'});
+    fft.real.forEach((r,i)=>{near(r,dft.real[i]);near(fft.imag[i],dft.imag[i]);});
+    near(fft.amplitude[4],2);near(fft.amplitude[0],.25);
+  }
+  near(analyze(Array.from({length:32},(_,n)=>3*(-1)**n)).amplitude[16],3);
+  near(analyze(x,{nfft:64}).amplitude[8],2);
+  assert.equal(analyze(x,{nfft:64}).binSpacing,.5);assert.equal(analyze(x,{nfft:64}).recordSpacing,1);
+  near(analyze(x,{},-2).phase[4],0);
+  assert.equal(analyze(Array(32).fill(0)).peak,null);
+  assert.throws(()=>analyze(x,{nfft:33}),/2 的/);
+  assert.throws(()=>analyze(x,{nfft:16}),/不少于/);
+});
