@@ -30,7 +30,7 @@
       waveform: $('waveform').value, frequencyHz: $('frequency').value, phaseDeg: $('phase').value,
       amplitude: $('amplitude').value, offset: $('offset').value, count: $('sample-count').value, position: $('position').value,
     });
-    return { schemaVersion: 1, input, operations: [] };
+    return { schemaVersion: 1, input, operations: Workbench.readOperations() };
   }
 
   function status(message, kind = '') {
@@ -108,6 +108,7 @@
       return row;
     }));
     plot(result);
+    Workbench.render(result);
     status(result.warnings.length ? result.warnings.join(' ') : `已生成 ${metrics.count} 个样值。图形与指标对应本次成功运行的参数。`, result.warnings.length ? 'warning' : '');
   }
 
@@ -123,6 +124,7 @@
   }
 
   function preset(name) {
+    Workbench.reset();
     for (const [id, value] of Object.entries(fields)) $(id).value = value;
     form.elements.source.value = name === 'manual' ? 'manual' : 'generated';
     if (name === 'impulse' || name === 'step') {
@@ -147,5 +149,21 @@
   };
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(resizePlot).observe($('waveform-plot').parentElement);
   else window.addEventListener('resize', resizePlot);
+  Workbench.connect({
+    runTask(task) {
+      const result = DSP.runAnalysis(task);
+      // Loading the normalized input and operations keeps subsequent edits reproducible.
+      const input = result.task.input;
+      form.elements.source.value = input.kind;
+      $('start-index').value = input.n0; $('sample-rate').value = input.sampleRateHz ?? '';
+      if (input.kind === 'manual') $('sequence').value = input.values.join(', ');
+      else for (const [key, id] of Object.entries({waveform:'waveform',frequencyHz:'frequency',phaseDeg:'phase',amplitude:'amplitude',offset:'offset',count:'sample-count',position:'position'})) {
+        if (input[key] !== undefined) $(id).value = input[key];
+      }
+      Workbench.loadOperations(result.task.operations);
+      updateFields(); render(result); lastResult = result;
+      return result;
+    }, readTask, getResult: () => lastResult, status, run,
+  });
   updateFields(); run();
 })();

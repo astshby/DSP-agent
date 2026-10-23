@@ -665,3 +665,22 @@ pre {
     margin:0
   }
 }
+
+/* Experiment controls and responsive analysis panels. */
+.input-column { min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.workbench-controls, .analysis-card { padding: 22px; }
+.workbench-controls h2, .analysis-card h2 { margin: 0 0 12px; font-size: 17px; }
+.workbench-controls details, .csv-import { margin: 16px 0; border-top: 1px solid #e1e8ef; padding-top: 12px; }
+.workbench-controls summary, .csv-import summary { cursor: pointer; font-weight: 650; margin-bottom: 12px; }
+.workbench-controls label, .csv-import label { display: block; margin: 10px 0; font-size: 13px; }
+.workbench-controls input:not([type=checkbox]), .workbench-controls select, .workbench-controls textarea, .csv-import input:not([type=checkbox]) { width: 100%; min-width: 0; border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px; font: inherit; background: white; color: #152b43; }
+.check-label input { width: auto; }
+.workbench-controls button, .csv-import button, .analysis-card button { border: 1px solid #c9d5e2; border-radius: 7px; padding: 9px 12px; background: #f0f5fc; color: #234e8b; cursor: pointer; font: inherit; font-size: 13px; }
+#operation-list { padding-left: 20px; font-size: 12px; overflow-wrap: anywhere; }
+#operation-list li { margin: 8px 0; }
+.analysis-card p { color: #52677c; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.analysis-card pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.analysis-card svg { width: 100%; display: block; }
+.analysis-card table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.analysis-card td, .analysis-card th { padding: 6px; text-align: left; border-bottom: 1px solid #e1e8ef; overflow-wrap: anywhere; }
+.analysis-scroll { overflow-x: auto; }
