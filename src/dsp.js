@@ -146,6 +146,24 @@
       } else if (request.type === 'response') {
         op = {type:'response',...coefficients(request.b,request.a)};
         analyses.push({type:'response',...frequencyResponse(op.b,op.a)});
+      } else if (request.type === 'zplane') {
+        op = {type:'zplane',...coefficients(request.b,request.a)};
+        analyses.push({type:'zplane',...poleZero(op.b,op.a)});
+      } else if (request.type === 'inverse_z') {
+        op = {type:'inverse_z',pole:number(request.pole,'实极点 p'),side:request.side};
+        if (op.pole === 0 || Math.abs(op.pole)>10 || !['right','left'].includes(op.side)) throw new Error('典型逆变换要求 0 < |p| ≤ 10，并选择左边或右边序列。');
+        const n0=op.side==='right'?0:-16;
+        const values=Array.from({length:16},(_,i)=>op.side==='right'?op.pole**i:-(op.pole**(n0+i)));
+        statistics(values);
+        analyses.push({type:'inverse_z',...op,n0,values,stable:op.side==='right'?Math.abs(op.pole)<1:Math.abs(op.pole)>1,
+          roc:op.side==='right'?`|z| > ${Math.abs(op.pole)}`:`|z| < ${Math.abs(op.pole)}`});
+      } else if (request.type === 'zvalue') {
+        op={type:'zvalue',radius:number(request.radius,'z 的模'),angleDeg:number(request.angleDeg,'z 的辐角')};
+        if (op.radius<=0) throw new Error('本数值实验要求 |z| > 0。');
+        let real=0,imag=0;
+        signal.values.forEach((v,i)=>{const n=signal.n0+i, scale=v*op.radius**(-n),angle=op.angleDeg*Math.PI/180*n;real+=scale*Math.cos(angle);imag-=scale*Math.sin(angle);});
+        if (!Number.isFinite(real)||!Number.isFinite(imag)) throw new Error('z 变换求值溢出，请选择更接近单位圆的 z。');
+        analyses.push({type:'zvalue',...op,real,imag});
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -205,6 +223,29 @@
     if (magnitude.some(v=>v!==null&&!Number.isFinite(v))) throw new Error('频率响应溢出。');
     const threshold=Math.max(...magnitude.filter(v=>v!==null))*1e-10;
     return {omega:num.omega,magnitude,phase:complex.map((c,i)=>!c||magnitude[i]<=threshold?null:Math.atan2(c.imag,c.real))};
+  }
+  function roots(coeffs) {
+    const c=[...coeffs];while(c.length>1&&c[0]===0)c.shift();
+    if(c.length===1)return [];
+    if(c.length===2)return [{real:-c[1]/c[0],imag:0}];
+    const [a,b,d]=c,delta=b*b-4*a*d;
+    if(!Number.isFinite(delta))throw new Error('零极点系数过大。');
+    if(delta>=0)return [{real:(-b+Math.sqrt(delta))/(2*a),imag:0},{real:(-b-Math.sqrt(delta))/(2*a),imag:0}];
+    return [{real:-b/(2*a),imag:Math.sqrt(-delta)/(2*a)},{real:-b/(2*a),imag:-Math.sqrt(-delta)/(2*a)}];
+  }
+  function poleZero(b,a) {
+    if(b.length>3||a.length>3)throw new Error('零极点实验目前支持最高二阶（各 3 个系数）。');
+    const m=Math.max(b.length,a.length),pad=c=>[...c,...Array(m-c.length).fill(0)];
+    let zeros=roots(pad(b)),poles=roots(pad(a));const cancelled=[];
+    if(b.every(v=>v===0))return {zeros:[],poles:[],cancelled,causalStable:true,roc:'零传递函数：各有限 z（表达式的可去奇点按延拓处理）；初始状态响应需另行判断'};
+    poles=poles.filter(p=>{
+      const index=zeros.findIndex(z=>Math.hypot(p.real-z.real,p.imag-z.imag)<1e-9);
+      if(index<0)return true;
+      cancelled.push(p);zeros.splice(index,1);return false;
+    });
+    if([...zeros,...poles].some(p=>!Number.isFinite(p.real)||!Number.isFinite(p.imag)))throw new Error('零极点求值溢出。');
+    const radius=Math.max(0,...poles.map(p=>Math.hypot(p.real,p.imag)));
+    return {zeros,poles,cancelled,causalStable:radius<1,roc:poles.length?`因果 ROC：|z| > ${radius.toPrecision(6)}`:'因果 ROC：整个有限 z 平面（常数传递函数）'};
   }
   // MATH_FUNCTIONS
 

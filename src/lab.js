@@ -16,6 +16,9 @@ const Workbench = (() => {
     <details><summary>线性卷积 / FIR 系统</summary><label>冲激响应 h[n]<input id="conv-kernel" value="1, 1, 1"></label><label>h 的首项下标<input id="conv-n0" type="number" value="0" step="1"></label><button type="button" id="add-convolve">加入线性卷积</button><p class="field-help">观察单位脉冲与阶跃输入的输出；卷积保留完整尾部。有限窗口外按零处理。</p></details>
     <details><summary>差分方程与初始条件</summary><label>分子 b₀, b₁, …<input id="diff-b" value="1"></label><label>分母 a₀, a₁, …<input id="diff-a" value="1, -0.5"></label><label>输入历史 x[n₀−1], x[n₀−2], …<input id="diff-x" placeholder="留空表示零"></label><label>输出历史 y[n₀−1], y[n₀−2], …<input id="diff-y" placeholder="留空表示零"></label><label>末尾补零项数<input id="diff-tail" type="number" min="0" value="0"></label><button type="button" id="add-difference">加入差分系统</button><p class="field-help">系数按延迟 z⁻¹ 升幂排列；这是按历史值向前递推的因果实现。零输入响应包含窗口前输入历史的贡献。</p></details>
     <details><summary>DTFT 与系统频率响应</summary><button type="button" id="add-dtft">分析当前序列 DTFT</button><label>系统分子 b<input id="response-b" value="0.5, 0.5"></label><label>系统分母 a<input id="response-a" value="1"></label><button type="button" id="add-response">查看 H(eʲω)</button><p class="field-help">在 −π 到 π 的 257 个点求和。零幅度附近相位留空；相位为主值，未展开。</p></details>
+    <details><summary>z 变换 / ROC / 零极点</summary><label>系统分子 b（最高二阶）<input id="z-b" value="1"></label><label>系统分母 a<input id="z-a" value="1, -0.5"></label><button type="button" id="add-zplane">查看零极点与因果 ROC</button>
+    <label>典型 X(z)=1/(1−p z⁻¹) 的实极点 p<input id="z-pole" type="number" value="0.5" step="any"></label><label>选择 ROC / 序列方向<select id="z-side"><option value="right">右边：|z| &gt; |p|</option><option value="left">左边：|z| &lt; |p|</option></select></label><button type="button" id="add-inverse">显示典型逆 z 变换</button>
+    <div class="field-pair"><label>z 的模<input id="z-radius" type="number" value="1" step="any"></label><label>辐角 / °<input id="z-angle" type="number" value="90" step="any"></label></div><button type="button" id="add-zvalue">当前有限序列的 X(z)</button></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -61,9 +64,22 @@ const Workbench = (() => {
     action('add-difference', () => add({type:'difference',b:number('diff-b'),a:number('diff-a'),xHistory:number('diff-x'),yHistory:number('diff-y'),tail:number('diff-tail')}));
     action('add-dtft', () => add({type:'dtft'}));
     action('add-response', () => add({type:'response',b:number('response-b'),a:number('response-a')}));
+    action('add-zplane', () => add({type:'zplane',b:number('z-b'),a:number('z-a')}));
+    action('add-inverse', () => add({type:'inverse_z',pole:number('z-pole'),side:number('z-side')}));
+    action('add-zvalue', () => add({type:'zvalue',radius:number('z-radius'),angleDeg:number('z-angle')}));
     // EXTRA_ACTIONS
   }
 
+  function polePlot(item) {
+    const radius=Math.max(1.3,...[...item.zeros,...item.poles].map(p=>Math.hypot(p.real,p.imag)*1.3));
+    const scale=100/radius,x=v=>150+v*scale,y=v=>130-v*scale;
+    const parts=[`<circle cx="150" cy="130" r="${scale}" fill="none" stroke="#bdcbd8" stroke-dasharray="4 4"/><path d="M25 130H275M150 5V255" stroke="#bdcbd8"/>`];
+    item.zeros.forEach(p=>parts.push(`<circle cx="${x(p.real)}" cy="${y(p.imag)}" r="5" fill="none" stroke="#287d76" stroke-width="2"/>`));
+    item.poles.forEach(p=>parts.push(`<path d="M${x(p.real)-5} ${y(p.imag)-5}l10 10m-10 0l10 -10" stroke="#ae4949" stroke-width="2"/>`));
+    parts.push(`<text x="275" y="145" font-size="12">Re</text><text x="155" y="14" font-size="12">Im</text><text x="${x(1)}" y="146" font-size="11">1</text>`);
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 300 270');svg.style.maxHeight='270px';svg.setAttribute('role','img');svg.setAttribute('aria-label','零极点图：圆圈为零点，叉号为极点，虚线为单位圆');svg.innerHTML=parts.join('');analyses.append(svg);
+    table(['类型','实部','虚部'],[...item.zeros.map(p=>['零点',p.real,p.imag]),...item.poles.map(p=>['极点',p.real,p.imag])]);
+  }
   function chart(xs,ys,xLabel,yLabel) {
     const finite=ys.filter(v=>v!==null&&Number.isFinite(v));
     if (!finite.length) {analyses.append(node('p','当前频率点无有限响应。'));return;}
@@ -107,6 +123,17 @@ const Workbench = (() => {
       chart(item.omega.map(w=>w/Math.PI),item.phase,'ω / π','相位 / rad');
       if (item.convolutionError !== null && item.convolutionError !== undefined) analyses.append(node('p',`卷积定理 max |Y − X·H| = ${item.convolutionError.toExponential(3)}（完整有限序列，无 IIR 截断）。`));
       analyses.append(node('p',item.type==='dtft'?'实序列满足 X(−ω)=X*(ω)，幅度偶对称、相位在非零幅度处呈奇对称（允许 2π 分支差）。':'只有 ROC 包含单位圆时，这一代数值才是冲激响应的 DTFT；单位圆极点处留空。'));
+    }
+    for(const item of result.analyses.filter(item=>['zplane','inverse_z','zvalue'].includes(item.type))) {
+      if(item.type==='zplane') {
+        analyses.append(node('h3','H(z) 零极点（约去公共因子后）'));
+        polePlot(item);
+        analyses.append(node('p',`${item.roc}；零状态、因果系统 ${item.causalStable?'BIBO 稳定':'不是 BIBO 稳定'}。约去 ${item.cancelled.length} 对公共零极点（数值容差 1e−9）；约消不代表内部初始状态稳定。`));
+      } else if(item.type==='inverse_z') {
+        analyses.append(node('h3','同一表达式，不同 ROC'));
+        chart(item.values.map((_,i)=>item.n0+i),item.values,'n','逆变换样值');
+        analyses.append(node('p',`X(z)=1/(1−${item.pole} z⁻¹)，ROC：${item.roc}。x[n]=${item.side==='right'?'pⁿ u[n]':'−pⁿ u[−n−1]'}；${item.side==='right'?'因果':'反因果'}，${item.stable?'ROC 包含单位圆，绝对可和':'ROC 不包含单位圆，非绝对可和'}。图中只显示 16 项，公式定义无限序列。`));
+      } else analyses.append(node('p',`有限序列 X(z)，|z|=${item.radius}、arg z=${item.angleDeg}°：实部 ${item.real.toPrecision(6)}，虚部 ${item.imag.toPrecision(6)}。|z|=1 时等于对应频率的 DTFT。`));
     }
     // EXTRA_RENDER
   }

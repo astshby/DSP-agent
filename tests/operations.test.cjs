@@ -51,3 +51,17 @@ test('DTFT respects negative support, conjugate symmetry and finite convolution 
   near(response.magnitude[128],1); near(response.magnitude[0],0); assert.equal(response.phase[0],null);
   assert.equal(DSP.runAnalysis(task([1],[{type:'response',b:[1],a:[1,-1]}])).analyses[0].magnitude[128],null);
 });
+
+test('z ROC distinguishes left/right inverse and causal stability with delay and cancellation', () => {
+  const analyze=op=>DSP.runAnalysis(task([1,2],[op])).analyses[0];
+  const p=analyze({type:'zplane',b:[1],a:[1,-.5]});near(p.poles[0].real,.5);assert.equal(p.causalStable,true);
+  assert.equal(analyze({type:'zplane',b:[1],a:[1,-1]}).causalStable,false);
+  near(analyze({type:'zplane',b:[0,1],a:[1]}).poles[0].real,0);
+  assert.equal(analyze({type:'zplane',b:[1,-2],a:[1,-2]}).poles.length,0);
+  const pair=analyze({type:'zplane',b:[1],a:[1,0,1]});near(Math.abs(pair.poles[0].imag),1);
+  const right=analyze({type:'inverse_z',pole:.5,side:'right'}),left=analyze({type:'inverse_z',pole:.5,side:'left'});
+  assert.equal(right.stable,true);assert.equal(left.stable,false);assert.equal(left.values.at(-1),-2);
+  assert.equal(analyze({type:'inverse_z',pole:2,side:'left'}).stable,true);
+  const z=analyze({type:'zvalue',radius:1,angleDeg:90});near(z.real,1);near(z.imag,-2);
+  assert.throws(()=>analyze({type:'zvalue',radius:0,angleDeg:0}));
+});
