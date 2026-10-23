@@ -117,6 +117,10 @@
         signal.n0 += op.shift;
         signal.values = signal.values.map(v => v * op.gain);
         signal.label = '序列变换结果'; signal.formula = `y[n] = ${op.gain} x[${op.reverse ? '−' : ''}(n − ${op.shift})]`;
+      } else if (request.type === 'convolve') {
+        op = {type:'convolve', kernel:array(request.kernel, '冲激响应'), n0:number(request.n0, '响应首项下标', {integer:true})};
+        signal.values = convolution(signal.values, op.kernel);
+        signal.n0 += op.n0; signal.label = '线性卷积输出'; signal.formula = 'y[n] = Σ x[k] h[n − k]；输入与 h 在窗口外按零处理';
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -127,6 +131,12 @@
     return { operations, signal, steps, analyses };
   }
 
+  function convolution(x, h) {
+    if (x.length + h.length - 1 > MAX_SAMPLES) throw new Error('卷积输出超过 4096 项，请缩短输入或冲激响应。');
+    const y = Array(x.length + h.length - 1).fill(0);
+    x.forEach((v,i) => h.forEach((w,j) => {y[i+j] += v*w;}));
+    return y;
+  }
   // MATH_FUNCTIONS
 
   function runAnalysis(task) {

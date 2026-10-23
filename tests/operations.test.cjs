@@ -16,3 +16,13 @@ test('reverse then shift preserves physical indices and task reproduction', () =
   assert.deepEqual(DSP.runAnalysis(r.task),r);
   assert.throws(()=>DSP.runAnalysis(task([1],[{type:'transform',gain:1,shift:0,reverse:'false'}])));
 });
+
+test('linear convolution values, length, support, identity and commutativity', () => {
+  const conv=(x,h,n0=0,hn0=0)=>DSP.runAnalysis(task(x,[{type:'convolve',kernel:h,n0:hn0}],n0));
+  const r=conv([1,2,1],[1,1,1],-1,-2);
+  assert.deepEqual(r.signal.values,[1,3,4,3,1]); assert.equal(r.signal.n0,-3);
+  assert.deepEqual(conv([1,2,1],[1]).signal.values,[1,2,1]);
+  assert.deepEqual(conv([2,-1],[3,4,5]).signal.values,conv([3,4,5],[2,-1]).signal.values);
+  assert.deepEqual(conv([1,1,1,1],[.5,.5]).signal.values,[.5,1,1,1,.5]);
+  assert.throws(()=>conv(Array(4096).fill(0),[1,1]),/4096/);
+});

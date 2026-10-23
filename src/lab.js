@@ -13,6 +13,7 @@ const Workbench = (() => {
   controls.innerHTML = `<h2>处理与实验</h2><p class="field-help">操作按加入顺序执行。清空后恢复原始信号。</p>
     <details open><summary>序列变换</summary><div class="field-pair"><label>增益<input id="op-gain" type="number" value="1" step="any"></label><label>移位 k<input id="op-shift" type="number" value="0" step="1"></label></div>
     <label class="check-label"><input id="op-reverse" type="checkbox"> 先反折，再移位</label><button type="button" id="add-transform">加入变换</button></details>
+    <details><summary>线性卷积 / FIR 系统</summary><label>冲激响应 h[n]<input id="conv-kernel" value="1, 1, 1"></label><label>h 的首项下标<input id="conv-n0" type="number" value="0" step="1"></label><button type="button" id="add-convolve">加入线性卷积</button><p class="field-help">观察单位脉冲与阶跃输入的输出；卷积保留完整尾部。有限窗口外按零处理。</p></details>
     <!-- EXTRA_CONTROLS -->
     <ol id="operation-list"></ol><button type="button" id="clear-operations">清空处理步骤</button>`;
   document.querySelector('.controls').after(controls);
@@ -54,6 +55,7 @@ const Workbench = (() => {
       api.runTask({schemaVersion:1,input:{kind:'manual',values:parsed.values,n0:0,sampleRateHz:parsed.sampleRateHz ?? $('sample-rate').value},operations:[]});
       if (parsed.timeStart !== null) api.status(`已导入 ${parsed.values.length} 项，fs = ${parsed.sampleRateHz} Hz。原时间首项 ${parsed.timeStart} s 已平移至 0 s。`, 'warning');
     });
+    action('add-convolve', () => add({type:'convolve',kernel:number('conv-kernel'),n0:number('conv-n0')}));
     // EXTRA_ACTIONS
   }
 
