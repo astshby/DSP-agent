@@ -689,3 +689,5 @@ pre {
 button:disabled { opacity: .5; cursor: not-allowed; }
 #assistant-plan { max-height: 300px; overflow: auto; }
 .results > .analysis-card { grid-column: 1 / -1; }
+.assistant-examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.assistant-examples button { padding: 5px 8px; font-size: 12px; }

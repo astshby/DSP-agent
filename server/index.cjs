@@ -33,7 +33,7 @@ function createServer(){
         res.writeHead(200,{'Content-Type':`${type}; charset=utf-8`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"});
         return res.end(await fs.readFile(path.join(root,file)));
       }
-      if(req.method==='GET'&&url.pathname==='/api/health')return json(res,200,{status:'ok',version:'0.9.0',mode:'local-mock',cloudProvidersEnabled:false});
+      if(req.method==='GET'&&url.pathname==='/api/health')return json(res,200,{status:'ok',version:'0.9.1',mode:'local-mock',cloudProvidersEnabled:false});
       if(req.method==='GET'&&url.pathname==='/api/tools')return json(res,200,{schemaVersion:1,tools:registry.definitions});
       if(req.method==='GET'&&url.pathname==='/api/providers')return json(res,200,{providers:[{id:'openai',status:'planned-delivery-10'},{id:'deepseek',status:'planned-delivery-11'}],acceptsApiKeys:false});
       if(req.method==='GET'&&url.pathname.startsWith('/api/results/'))return json(res,200,registry.result(url.pathname.slice('/api/results/'.length)));
@@ -43,7 +43,7 @@ function createServer(){
       if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('请求必须是 JSON 对象。');
       if(url.pathname==='/api/signals')return json(res,201,registry.add(data.input));
       if(url.pathname==='/api/tools/call')return json(res,200,registry.execute(data.name,data.arguments));
-      if(url.pathname==='/api/agent/preview')return json(res,200,plan(data.text,data.task));
+      if(url.pathname==='/api/agent/preview')return json(res,200,plan(data.text,data.task,data.settings));
       if(url.pathname==='/api/agent/runs'){
         if(data.mode!=='mock')throw new Error('本版仅实现 mock 工具流程，真实模型将在第 10 / 11 次接入。');
         const run=await runAgent(mockProvider(data.signalId,data.operations),registry);
@@ -59,6 +59,6 @@ if(require.main===module){
   if(!Number.isInteger(port)||port<1||port>65535)throw new Error('DSP_PORT 必须为 1—65535 的整数。');
   const server=createServer();
   server.on('error',error=>{console.error(error.code==='EADDRINUSE'?`端口 ${port} 已占用；关闭旧服务或设置 DSP_PORT。`:error.message);process.exitCode=1;});
-  server.listen(port,'127.0.0.1',()=>console.log(`DSP v0.9 本地服务：http://127.0.0.1:${port}\n仅本机可访问。当前为离线/模拟工具模式，不调用云端模型。按 Ctrl+C 停止。`));
+  server.listen(port,'127.0.0.1',()=>console.log(`DSP v0.9.1 本地服务：http://127.0.0.1:${port}\n仅本机可访问。当前为离线/模拟工具模式，不调用云端模型。按 Ctrl+C 停止。`));
 }
 module.exports={createServer};

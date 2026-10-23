@@ -37,7 +37,7 @@ const Workbench = (() => {
   const analyses = document.createElement('article'); analyses.className = 'card analysis-card'; analyses.id = 'analyses';
   document.querySelector('.task-details').before(analyses);
   const assistant=document.createElement('section');assistant.className='card analysis-card';
-  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持固定命令及单位；不会联网或调用大模型。先预览参数，再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="低通 100 Hz 然后分析频谱"></textarea><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan">${RuleAssistant.help}</pre>`;
+  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持常用自然句式与 Hz / kHz。未注明参数沿用页面设置，修改时沿用上次操作。离线解析，先预览再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱"></textarea><div class="assistant-examples"><button type="button" data-assistant-example="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱">试一个滤波实验</button><button type="button" data-assistant-example="截止改成 150Hz">修改截止频率</button><button type="button" data-assistant-example="换成二阶 IIR">改用 IIR</button></div><p id="assistant-context" class="field-help"></p><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan" role="status" aria-live="polite">${RuleAssistant.help}</pre>`;
   document.querySelector('.results').append(assistant);
 
   function describeOperation(op) {
@@ -54,6 +54,29 @@ const Workbench = (() => {
       case 'spectrum':return `${op.method.toUpperCase()}：${op.nfft} 点，${op.window} 窗${op.removeMean?'，先去均值':''}`;
       case 'filter':return `${op.family.toUpperCase()} ${op.response==='lowpass'?'低通':'高通'}：截止 ${op.cutoffHz} Hz${op.family==='fir'?`，${op.taps} 抽头，${op.window} 窗`:'，二阶 Butterworth'}`;
       default:return op.type;
+    }
+  }
+  function assistantSettings() {
+    return {
+      filter:{family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')},
+      spectrum:{method:number('spectrum-method'),nfft:number('spectrum-nfft'),window:number('spectrum-window'),removeMean:$('spectrum-mean').checked},
+    };
+  }
+  function previewText(plan) {
+    const labels={family:'滤波器类别',response:'响应类型',cutoffHz:'截止频率',taps:'抽头数',window:'窗函数',method:'计算方法',nfft:'点数',removeMean:'去均值',parameters:'参数'};
+    return plan.message+(plan.task?'\n\n'+plan.changes.map(change=>{
+      const sources=Object.entries(change.sources).map(([key,source])=>`${labels[key]??key}：${source}`).join('；');
+      return `${change.mode==='replace'?'修改':'新增'}第 ${change.index+1} 步：${describeOperation(change.operation)}\n${sources}`;
+    }).join('\n\n'):'');
+  }
+  function syncSettings(ops) {
+    const filter=ops.findLast(op=>op.type==='filter'),spectrum=ops.findLast(op=>op.type==='spectrum');
+    if(filter)for(const [key,id] of Object.entries({family:'filter-family',response:'filter-response',cutoffHz:'filter-cutoff',taps:'filter-taps',window:'filter-window'})) {
+      if(filter[key]!==undefined)$(id).value=filter[key];
+    }
+    if(spectrum){
+      for(const [key,id] of Object.entries({method:'spectrum-method',nfft:'spectrum-nfft',window:'spectrum-window'}))$(id).value=spectrum[key];
+      $('spectrum-mean').checked=spectrum.removeMean;
     }
   }
   function list() {
@@ -98,7 +121,7 @@ const Workbench = (() => {
     action('export-output', () => download('dsp-output.csv',csvText(api.getResult().signal),'text/csv'));
     action('export-report', () => {
       const r=api.getResult();
-      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
+      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9.1 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
     });
     action('import-task', async () => {
       const file=$('task-file').files[0];if(!file)throw new Error('请选择任务 JSON。');
@@ -106,14 +129,23 @@ const Workbench = (() => {
       api.runTask(JSON.parse(await file.text()));
     });
     action('assistant-prepare', () => {
-      pendingPlan=RuleAssistant.plan($('assistant-text').value,api.readTask());
-      $('assistant-plan').textContent=pendingPlan.message+(pendingPlan.task?'\n'+pendingPlan.task.operations.map((op,i)=>`${i+1}. ${describeOperation(op)}`).join('\n'):'');
+      pendingPlan=RuleAssistant.plan($('assistant-text').value,api.readTask(),assistantSettings());
+      $('assistant-plan').textContent=previewText(pendingPlan);
       $('assistant-execute').disabled=pendingPlan.status!=='ready';
     });
-    action('assistant-execute', () => {if(pendingPlan?.status==='ready')api.runTask(pendingPlan.task);});
+    action('assistant-execute', () => {
+      if(pendingPlan?.status!=='ready')return;
+      const applied=pendingPlan;
+      api.runTask(applied.task);
+      $('assistant-plan').textContent=previewText({...applied,message:'已执行并更新结果。可以继续输入“截止改成 150Hz”等要求。'});
+    });
     const invalidate=()=>{if(pendingPlan){pendingPlan=null;$('assistant-execute').disabled=true;$('assistant-plan').textContent='参数或命令已修改，请重新解析预览。';}};
     $('assistant-text').addEventListener('input',invalidate);
     $('signal-form').addEventListener('input',invalidate);
+    controls.addEventListener('input',invalidate);
+    document.querySelectorAll('[data-assistant-example]').forEach(button=>button.addEventListener('click',()=>{
+      $('assistant-text').value=button.dataset.assistantExample;invalidate();$('assistant-text').focus();
+    }));
     action('local-check', async () => {
       if(!['http:','https:'].includes(location.protocol))throw new Error('请先在项目目录运行 npm start，再打开 http://127.0.0.1:8787 使用本地工具。');
       const originalTask=api.getResult().task;
@@ -172,6 +204,8 @@ const Workbench = (() => {
     if(pendingPlan)$('assistant-plan').textContent='结果已更新；再次执行前请重新解析预览。';
     pendingPlan=null;
     if($('assistant-execute'))$('assistant-execute').disabled=true;
+    const latestFilter=result.task.operations.findLast(op=>op.type==='filter');
+    $('assistant-context').textContent=latestFilter?`当前任务共 ${result.task.operations.length} 步；最近滤波器为 ${describeOperation(latestFilter)}。说“改成…”会修改该步骤并重算后续操作。`:'当前没有滤波步骤。可以描述新实验，也可以先在左侧调整滤波与频谱设置。';
     analyses.replaceChildren(node('h2', '实验读数'));
     const source = result.task.input;
     if (source.frequencyHz !== undefined) {
@@ -224,5 +258,5 @@ const Workbench = (() => {
     }
     // EXTRA_RENDER
   }
-  return {connect, render, readOperations:() => operations, reset:() => {operations=[];list();}, loadOperations:ops => {operations=ops;list();}};
+  return {connect, render, readOperations:() => operations, reset:() => {operations=[];list();}, loadOperations:ops => {operations=ops;syncSettings(ops);list();}};
 })();

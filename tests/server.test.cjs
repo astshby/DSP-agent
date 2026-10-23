@@ -11,6 +11,8 @@ test('local HTTP serves the app, runs tool workflow and rejects cross-origin or 
   assert.equal((await fetch(base+'/api/tools').then(r=>r.json())).tools.length,2);
   assert.equal((await fetch(base+'/.git/config')).status,404);
   assert.equal((await fetch(base+'/api/health',{headers:{Origin:'https://example.org'}})).status,403);
+  const preview=await post('/api/agent/preview',{text:'请低通滤波',task:{schemaVersion:1,input:{kind:'manual',values:[1,2,1],n0:0,sampleRateHz:1000},operations:[]},settings:{filter:{family:'iir',cutoffHz:120}}}).then(r=>r.json());
+  assert.equal(preview.status,'ready');assert.equal(preview.task.operations[0].cutoffHz,120);assert.equal(preview.changes[0].sources.cutoffHz,'页面设置');
   const stored=await post('/api/signals',{input:{kind:'manual',values:[1,2,1],n0:-1,sampleRateHz:1000}}).then(r=>r.json());
   const response=await post('/api/agent/runs',{mode:'mock',signalId:stored.signalId,operations:[{type:'convolve',kernel:[1,1],n0:0}]});
   assert.equal(response.status,200);const run=await response.json();

@@ -1,6 +1,6 @@
 {
   "name": "dsp-agent-lab",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "description": "离线数字信号处理课程实验台",
   "scripts": {

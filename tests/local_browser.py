@@ -15,12 +15,33 @@ try:
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:external.append(r.url) if not r.url.startswith(f'http://127.0.0.1:{port}/') else None)
             page.goto(f'http://127.0.0.1:{port}')
-            page.locator('#assistant-text').fill('低通 100 Hz 然后分析频谱');page.locator('#assistant-prepare').click();page.locator('#assistant-execute').click()
+            # Natural language uses explicit parameters and inherits page defaults.
+            page.locator('#filter-taps').evaluate('(e)=>e.closest("details").open=true')
+            page.locator('#filter-taps').fill('31')
+            page.locator('#filter-window').select_option('hann')
+            page.locator('#assistant-text').fill('请帮我做一个截止频率为0.2kHz的低通滤波器，再看频谱')
+            page.locator('#assistant-prepare').click()
+            expect(page.locator('#assistant-plan')).to_contain_text('抽头数：页面设置')
+            expect(page.locator('#operation-list li')).to_have_count(0)
+            page.locator('#assistant-execute').click()
             expect(page.locator('#operation-list li')).to_have_count(2)
+            assert page.locator('#filter-cutoff').input_value()=='200'
+            assert page.locator('#filter-taps').input_value()=='31'
+            page.locator('#assistant-text').fill('截止改成150Hz')
+            page.locator('#assistant-prepare').click()
+            expect(page.locator('#assistant-plan')).to_contain_text('修改第 1 步')
+            expect(page.locator('#assistant-plan')).to_contain_text('窗函数：上次操作')
+            page.locator('#assistant-execute').click()
+            expect(page.locator('#operation-list li')).to_have_count(2)
+            assert page.locator('#filter-cutoff').input_value()=='150'
+            page.locator('#assistant-text').fill('换成二阶 IIR')
+            page.locator('#assistant-prepare').click();page.locator('#assistant-execute').click()
+            expect(page.locator('#operation-list li')).to_have_count(2)
+            assert page.locator('#filter-family').input_value()=='iir'
             page.locator('#local-check').evaluate('(e)=>e.closest("details").open=true');page.locator('#local-check').click()
             expect(page.locator('#local-service-note')).to_contain_text('容差内一致')
             page.locator('#assistant-text').fill('放大 2 倍');page.locator('#assistant-prepare').click()
-            page.locator('#amplitude').fill('3')
+            page.locator('#filter-cutoff').fill('180')
             assert page.locator('#assistant-execute').is_disabled()
             # Exported output CSV is a numeric, offline-downloadable result.
             with page.expect_download() as download:page.locator('#export-output').click()
@@ -33,7 +54,7 @@ try:
             assert page.locator('#assistant-text').bounding_box()['width'] > 280
             page.screenshot(path=str(ROOT/'test-results/v09-mobile.png'),full_page=True)
             assert not errors,errors;assert not external,external
-            print('PASS local backend browser: rule preview/execute, mock tool result agreement, stale-preview invalidation, CSV export, responsive UI and same-origin loading')
+            print('PASS local backend browser: rule preview/execute, mock tool result agreement, natural parameter extraction, settings inheritance, contextual edits, stale-preview invalidation, CSV export, responsive UI and same-origin loading')
         finally:browser.close()
 finally:
     server.terminate();server.wait(timeout=5)
