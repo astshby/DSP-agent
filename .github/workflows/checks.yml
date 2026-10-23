@@ -14,5 +14,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm test
+      - run: npm run build:weekly
       - run: npm run build:offline
-      - run: git diff --exit-code -- self/第十三周/index.html
+      - run: git diff --exit-code -- self

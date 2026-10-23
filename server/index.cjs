@@ -9,7 +9,7 @@ const root=path.resolve(__dirname,'..');
 const staticFiles=new Map([
   ['/', ['index.html','text/html']],['/index.html',['index.html','text/html']],
   ['/styles.css',['styles.css','text/css']],
-  ...['dsp','assistant','lab','app'].map(name=>[`/src/${name}.js`,[`src/${name}.js`,'text/javascript']]),
+  ...['dsp','capabilities','assistant','lab','app'].map(name=>[`/src/${name}.js`,[`src/${name}.js`,'text/javascript']]),
 ]);
 function createServer(){
   const registry=createRegistry();
@@ -33,7 +33,7 @@ function createServer(){
         res.writeHead(200,{'Content-Type':`${type}; charset=utf-8`,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"});
         return res.end(await fs.readFile(path.join(root,file)));
       }
-      if(req.method==='GET'&&url.pathname==='/api/health')return json(res,200,{status:'ok',version:'0.9.1',mode:'local-mock',cloudProvidersEnabled:false});
+      if(req.method==='GET'&&url.pathname==='/api/health')return json(res,200,{status:'ok',version:'0.9.2',mode:'local-mock',cloudProvidersEnabled:false});
       if(req.method==='GET'&&url.pathname==='/api/tools')return json(res,200,{schemaVersion:1,tools:registry.definitions});
       if(req.method==='GET'&&url.pathname==='/api/providers')return json(res,200,{providers:[{id:'openai',status:'planned-delivery-10'},{id:'deepseek',status:'planned-delivery-11'}],acceptsApiKeys:false});
       if(req.method==='GET'&&url.pathname.startsWith('/api/results/'))return json(res,200,registry.result(url.pathname.slice('/api/results/'.length)));
@@ -59,6 +59,6 @@ if(require.main===module){
   if(!Number.isInteger(port)||port<1||port>65535)throw new Error('DSP_PORT 必须为 1—65535 的整数。');
   const server=createServer();
   server.on('error',error=>{console.error(error.code==='EADDRINUSE'?`端口 ${port} 已占用；关闭旧服务或设置 DSP_PORT。`:error.message);process.exitCode=1;});
-  server.listen(port,'127.0.0.1',()=>console.log(`DSP v0.9.1 本地服务：http://127.0.0.1:${port}\n仅本机可访问。当前为离线/模拟工具模式，不调用云端模型。按 Ctrl+C 停止。`));
+  server.listen(port,'127.0.0.1',()=>console.log(`DSP v0.9.2 本地服务：http://127.0.0.1:${port}\n仅本机可访问。当前为离线/模拟工具模式，不调用云端模型。按 Ctrl+C 停止。`));
 }
 module.exports={createServer};

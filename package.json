@@ -1,13 +1,14 @@
 {
   "name": "dsp-agent-lab",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "description": "离线数字信号处理课程实验台",
   "scripts": {
     "test": "node --test tests/*.test.cjs",
     "build:offline": "node scripts/build-offline.cjs",
     "start": "node server/index.cjs",
-    "test:browser": "python tests/browser_smoke.py && python tests/deliveries_browser.py && python tests/local_browser.py"
+    "test:browser": "python tests/browser_smoke.py && python tests/deliveries_browser.py && python tests/local_browser.py",
+    "build:weekly": "node scripts/backfill-assistants.cjs"
   },
   "engines": {
     "node": ">=20"

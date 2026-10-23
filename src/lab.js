@@ -37,39 +37,29 @@ const Workbench = (() => {
   const analyses = document.createElement('article'); analyses.className = 'card analysis-card'; analyses.id = 'analyses';
   document.querySelector('.task-details').before(analyses);
   const assistant=document.createElement('section');assistant.className='card analysis-card';
-  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持常用自然句式与 Hz / kHz。未注明参数沿用页面设置，修改时沿用上次操作。离线解析，先预览再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱"></textarea><div class="assistant-examples"><button type="button" data-assistant-example="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱">试一个滤波实验</button><button type="button" data-assistant-example="截止改成 150Hz">修改截止频率</button><button type="button" data-assistant-example="换成二阶 IIR">改用 IIR</button></div><p id="assistant-context" class="field-help"></p><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan" role="status" aria-live="polite">${RuleAssistant.help}</pre>`;
+  assistant.innerHTML=`<h2>离线规则助手</h2><p class="field-help">支持常用自然句式与 Hz / kHz。支持信号、序列、差分、DTFT / z、频谱和滤波。未注明参数沿用页面设置。离线解析，先预览再执行。</p><label for="assistant-text">实验命令</label><textarea id="assistant-text" rows="3" placeholder="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱"></textarea><div class="assistant-examples"><button type="button" data-assistant-example="请用 31 抽头 Hamming 做 0.2 kHz 低通，再看频谱">试一个滤波实验</button><button type="button" data-assistant-example="截止改成 150Hz">修改截止频率</button><button type="button" data-assistant-example="换成二阶 IIR">改用 IIR</button></div><p id="assistant-context" class="field-help"></p><div class="assistant-actions"><button type="button" id="assistant-prepare">解析并预览</button><button type="button" id="assistant-execute" disabled>执行预览任务</button></div><pre id="assistant-plan" role="status" aria-live="polite">${RuleAssistant.help}</pre>`;
   document.querySelector('.results').append(assistant);
 
-  function describeOperation(op) {
-    const list=values=>values.slice(0,8).join(', ')+(values.length>8?' …':'');
-    switch(op.type) {
-      case 'transform':return `${op.reverse?'反折 → ':''}移位 ${op.shift} → 增益 ${op.gain}`;
-      case 'convolve':return `卷积：h=[${list(op.kernel)}]，n₀=${op.n0}`;
-      case 'difference':return `差分方程：b=[${list(op.b)}]，a=[${list(op.a)}]，尾部补零 ${op.tail} 项`;
-      case 'dtft':return '当前序列 DTFT（257 个频率点）';
-      case 'response':return `系统响应：b=[${list(op.b)}]，a=[${list(op.a)}]`;
-      case 'zplane':return `零极点：b=[${list(op.b)}]，a=[${list(op.a)}]`;
-      case 'inverse_z':return `典型逆 z：p=${op.pole}，${op.side==='right'?'右边':'左边'}序列`;
-      case 'zvalue':return `z 求值：模 ${op.radius}，辐角 ${op.angleDeg}°`;
-      case 'spectrum':return `${op.method.toUpperCase()}：${op.nfft} 点，${op.window} 窗${op.removeMean?'，先去均值':''}`;
-      case 'filter':return `${op.family.toUpperCase()} ${op.response==='lowpass'?'低通':'高通'}：截止 ${op.cutoffHz} Hz${op.family==='fir'?`，${op.taps} 抽头，${op.window} 窗`:'，二阶 Butterworth'}`;
-      default:return op.type;
-    }
-  }
+  const describeOperation=RuleAssistant.describeOperation;
   function assistantSettings() {
     return {
+      convolve:{kernel:number('conv-kernel'),n0:number('conv-n0')},
+      difference:{b:number('diff-b'),a:number('diff-a'),xHistory:number('diff-x'),yHistory:number('diff-y'),tail:number('diff-tail')},
+      response:{b:number('response-b'),a:number('response-a')},
+      zplane:{b:number('z-b'),a:number('z-a')},
+      inverse_z:{pole:number('z-pole'),side:number('z-side')},
+      zvalue:{radius:number('z-radius'),angleDeg:number('z-angle')},
       filter:{family:number('filter-family'),response:number('filter-response'),cutoffHz:number('filter-cutoff'),taps:number('filter-taps'),window:number('filter-window')},
       spectrum:{method:number('spectrum-method'),nfft:number('spectrum-nfft'),window:number('spectrum-window'),removeMean:$('spectrum-mean').checked},
     };
   }
-  function previewText(plan) {
-    const labels={family:'滤波器类别',response:'响应类型',cutoffHz:'截止频率',taps:'抽头数',window:'窗函数',method:'计算方法',nfft:'点数',removeMean:'去均值',parameters:'参数'};
-    return plan.message+(plan.task?'\n\n'+plan.changes.map(change=>{
-      const sources=Object.entries(change.sources).map(([key,source])=>`${labels[key]??key}：${source}`).join('；');
-      return `${change.mode==='replace'?'修改':'新增'}第 ${change.index+1} 步：${describeOperation(change.operation)}\n${sources}`;
-    }).join('\n\n'):'');
-  }
+  const previewText=RuleAssistant.previewText;
   function syncSettings(ops) {
+    const fields={convolve:{kernel:'conv-kernel',n0:'conv-n0'},difference:{b:'diff-b',a:'diff-a',xHistory:'diff-x',yHistory:'diff-y',tail:'diff-tail'},response:{b:'response-b',a:'response-a'},zplane:{b:'z-b',a:'z-a'},inverse_z:{pole:'z-pole',side:'z-side'},zvalue:{radius:'z-radius',angleDeg:'z-angle'}};
+    for(const [type,ids] of Object.entries(fields)){
+      const op=ops.findLast(item=>item.type===type);if(!op)continue;
+      for(const [key,id] of Object.entries(ids))if(op[key]!==undefined)$(id).value=Array.isArray(op[key])?op[key].join(', '):op[key];
+    }
     const filter=ops.findLast(op=>op.type==='filter'),spectrum=ops.findLast(op=>op.type==='spectrum');
     if(filter)for(const [key,id] of Object.entries({family:'filter-family',response:'filter-response',cutoffHz:'filter-cutoff',taps:'filter-taps',window:'filter-window'})) {
       if(filter[key]!==undefined)$(id).value=filter[key];
@@ -121,7 +111,7 @@ const Workbench = (() => {
     action('export-output', () => download('dsp-output.csv',csvText(api.getResult().signal),'text/csv'));
     action('export-report', () => {
       const r=api.getResult();
-      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9.1 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
+      download('dsp-report.md',`# DSP 实验报告\n\n来源：v0.9.2 离线实验台；以下为程序计算结果。\n\n## 指标\n\n${JSON.stringify(r.metrics,null,2)}\n\n## 实验读数\n\n${analyses.innerText}\n\n## 可复现任务\n\n\`\`\`json\n${JSON.stringify(r.task,null,2)}\n\`\`\`\n`,'text/markdown');
     });
     action('import-task', async () => {
       const file=$('task-file').files[0];if(!file)throw new Error('请选择任务 JSON。');

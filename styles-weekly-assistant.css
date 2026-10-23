@@ -1,0 +1,11 @@
+/* Shared enhancement styles, inlined into each historical weekly delivery. */
+.weekly-assistant { min-width: 0; padding: 20px; grid-column: 1 / -1; }
+.weekly-assistant h2 { margin: 0 0 10px; font-size: 17px; }
+.weekly-assistant p { line-height: 1.7; overflow-wrap: anywhere; }
+.weekly-assistant label { font-size: 13px; display: block; }
+.weekly-assistant textarea { box-sizing: border-box; width: 100%; margin: 8px 0; padding: 10px; border: 1px solid #c9d5e2; border-radius: 8px; resize: vertical; font: inherit; font-size: 13px; }
+.weekly-assistant button { padding: 7px 9px; border: 1px solid #c9d5e2; border-radius: 7px; background: #f0f5fc; color: #234e8b; cursor: pointer; font: inherit; font-size: 12px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.weekly-assistant button:disabled { opacity: .5; cursor: not-allowed; }
+.weekly-actions, .weekly-examples { display: flex; flex-wrap: wrap; gap: 7px; }
+.weekly-examples { margin: 4px 0 12px; }
+.weekly-assistant pre { max-height: 330px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; border-radius: 8px; background: #152b43; color: #edf5fc; font-size: 12px; line-height: 1.6; }
