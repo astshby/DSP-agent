@@ -132,6 +132,20 @@
         signal.label = '差分方程输出'; signal.formula = 'a₀ y[n] = Σ bₖ x[n−k] − Σₖ≥₁ aₖ y[n−k]；按给定历史值递推';
         analyses.push({type:'difference',b:op.b,a:op.a,zeroState,zeroInput,
           impulse:difference([1,...Array(31).fill(0)],op.b,op.a,[],[]),step:difference(Array(32).fill(1),op.b,op.a,[],[])});
+      } else if (request.type === 'dtft') {
+        op = {type:'dtft'};
+        const spectrum = dtft(signal.values, signal.n0);
+        let convolutionError = null;
+        const previous = operations.at(-1);
+        if (previous?.type === 'convolve') {
+          const before = steps.length > 1 ? steps.at(-2).signal : original;
+          const x = dtft(before.values,before.n0), h = dtft(previous.kernel,previous.n0);
+          convolutionError = Math.max(...spectrum.real.map((r,i)=>Math.hypot(r-(x.real[i]*h.real[i]-x.imag[i]*h.imag[i]),spectrum.imag[i]-(x.real[i]*h.imag[i]+x.imag[i]*h.real[i]))));
+        }
+        analyses.push({type:'dtft',...spectrum,convolutionError});
+      } else if (request.type === 'response') {
+        op = {type:'response',...coefficients(request.b,request.a)};
+        analyses.push({type:'response',...frequencyResponse(op.b,op.a)});
       // OPERATION_BRANCHES
       } else throw new Error(`尚未支持操作：${request.type}`);
       if (!Number.isSafeInteger(signal.n0) || !Number.isSafeInteger(signal.n0 + signal.values.length - 1)) throw new Error('处理后的下标超出范围。');
@@ -167,6 +181,30 @@
       if (!Number.isFinite(y[n]) || Math.abs(y[n]) > 1e150) throw new Error('递推响应溢出，请缩短观察窗口或检查不稳定系统参数。');
     }
     return y;
+  }
+  function atFrequency(values, n0, omega) {
+    let real=0,imag=0;
+    values.forEach((v,i)=>{real+=v*Math.cos(omega*(n0+i));imag-=v*Math.sin(omega*(n0+i));});
+    return {real,imag};
+  }
+  function dtft(values,n0) {
+    const omega=Array.from({length:257},(_,i)=>-Math.PI+2*Math.PI*i/256);
+    const complex=omega.map(w=>atFrequency(values,n0,w));
+    const magnitude=complex.map(c=>Math.hypot(c.real,c.imag));
+    const threshold=Math.max(...magnitude)*1e-10;
+    return {omega,real:complex.map(c=>c.real),imag:complex.map(c=>c.imag),magnitude,
+      phase:complex.map((c,i)=>magnitude[i]<=threshold?null:Math.atan2(c.imag,c.real))};
+  }
+  function frequencyResponse(b,a) {
+    const num=dtft(b,0),den=dtft(a,0);
+    const complex=num.real.map((r,i)=>{
+      const d=den.real[i]**2+den.imag[i]**2;
+      return d < 1e-24 ? null : {real:(r*den.real[i]+num.imag[i]*den.imag[i])/d,imag:(num.imag[i]*den.real[i]-r*den.imag[i])/d};
+    });
+    const magnitude=complex.map(c=>c?Math.hypot(c.real,c.imag):null);
+    if (magnitude.some(v=>v!==null&&!Number.isFinite(v))) throw new Error('频率响应溢出。');
+    const threshold=Math.max(...magnitude.filter(v=>v!==null))*1e-10;
+    return {omega:num.omega,magnitude,phase:complex.map((c,i)=>!c||magnitude[i]<=threshold?null:Math.atan2(c.imag,c.real))};
   }
   // MATH_FUNCTIONS
 

@@ -39,3 +39,15 @@ test('difference equation normalizes a0 and decomposes zero state plus zero inpu
   assert.throws(()=>run([1],{yHistory:[1,2]}),/历史/);
   assert.throws(()=>run(Array(1024).fill(1),{a:[1,-10]}),/溢出/);
 });
+
+test('DTFT respects negative support, conjugate symmetry and finite convolution theorem', () => {
+  const r=DSP.runAnalysis(task([1,2,1],[{type:'convolve',kernel:[.5,.5],n0:-1},{type:'dtft'}],-2));
+  const d=r.analyses[0]; assert.ok(d.convolutionError<1e-12);
+  d.real.forEach((v,i)=>{near(v,d.real[256-i]);near(d.imag[i],-d.imag[256-i]);});
+  near(d.magnitude[128],4);
+  const impulse=DSP.runAnalysis(task([1],[{type:'dtft'}],-1)).analyses[0];
+  near(impulse.phase[192],Math.PI/2);
+  const response=DSP.runAnalysis(task([0],[{type:'response',b:[.5,.5],a:[1]}])).analyses[0];
+  near(response.magnitude[128],1); near(response.magnitude[0],0); assert.equal(response.phase[0],null);
+  assert.equal(DSP.runAnalysis(task([1],[{type:'response',b:[1],a:[1,-1]}])).analyses[0].magnitude[128],null);
+});
