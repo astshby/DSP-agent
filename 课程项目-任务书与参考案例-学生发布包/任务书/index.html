@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f3f6fb">
+  <title>AI+DSP 课程项目｜Web 信号分析 Agent</title>
+  <style>
+    :root{color-scheme:light;--ink:#17263b;--muted:#5a6b80;--card:#fff;--line:#d9e2ed;--blue:#275ba8;--teal:#087e88;--amber:#a55c0c;--shadow:0 16px 42px #1c355018}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 84% -10%,#dce8f8 0,#f3f6fb 50%);color:var(--ink);font:15px/1.65 Inter,"Microsoft YaHei",system-ui,sans-serif}.page{max-width:960px;margin:auto;padding:26px clamp(16px,4vw,46px) 48px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:12px;color:var(--blue);font-weight:850;letter-spacing:.1em}.tools{display:flex;gap:8px}.tools button{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}.hero{margin:17px 0 20px;padding:34px clamp(20px,4vw,40px);border-radius:22px;background:linear-gradient(120deg,#132846,#235187 72%,#087e88);color:#f4f8ff;box-shadow:var(--shadow)}.kicker{color:#bcd4f7;font-size:12px;font-weight:800;letter-spacing:.13em}.hero h1{margin:10px 0 12px;font-size:clamp(29px,4.7vw,45px);line-height:1.12;letter-spacing:-.04em}.hero p{max-width:770px;margin:0;color:#d7e5f5;font-size:16px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.chips span{padding:5px 10px;border:1px solid #ffffff45;border-radius:99px;background:#ffffff12;color:#eef5ff;font-size:11px}.section{margin:22px 0}.section h2{margin:0 0 10px;font-size:20px;line-height:1.3}.intro{max-width:850px;color:#43566c}.callout{padding:13px 15px;border:1px solid #b9d9de;border-left:4px solid var(--teal);border-radius:12px;background:#eff9fa;color:#244a52}.callout strong{color:#075b64}.diagram{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:9px;align-items:stretch}.box,.card,.step,.sample{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--card)}.box b{display:block;color:var(--blue);font-size:13px}.box p,.card p,.card li,.step p,.sample p{margin:4px 0 0;color:var(--muted);font-size:12px}.arrow{align-self:center;color:var(--teal);font-size:21px;font-weight:800}.cards{display:grid;grid-template-columns:1fr 1fr;gap:9px}.card h3{margin:0 0 5px;font-size:14px}.card ul{margin:6px 0 0;padding-left:18px}.card li+li{margin-top:3px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;counter-reset:s}.step:before{counter-increment:s;content:"0" counter(s);display:block;margin-bottom:5px;color:var(--teal);font-size:11px;font-weight:850;letter-spacing:.1em}.step b{font-size:12px}.sample{margin-top:10px}.sample strong{font-size:13px}.request{color:var(--blue)!important;font-weight:750}.criteria{display:grid;grid-template-columns:1fr 1fr;gap:8px}.criterion{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font-size:12px}.criterion b{color:var(--blue)}.sources{font-size:11px;color:var(--muted)}.sources a{color:var(--blue);text-decoration:none}.sources a:hover{text-decoration:underline}.safety{padding:12px 14px;border:1px solid #efd8b2;border-left:4px solid var(--amber);border-radius:12px;background:#fff8ec;color:#694a23;font-size:12px}.end{margin-top:22px;padding:14px 17px;border-radius:14px;background:#142a48;color:#edf5ff}.end strong{color:#a8eff2}.end p{margin:4px 0 0;color:#c9d8eb;font-size:12px}footer{display:flex;justify-content:space-between;gap:10px;margin-top:23px;padding-top:12px;border-top:1px solid var(--line);color:#748398;font-size:11px}
+    body[data-theme="dark"]{color-scheme:dark;--ink:#e9f1fb;--muted:#a7b8cc;--card:#111c2e;--line:#2b3c55;--shadow:0 16px 42px #0004;background:radial-gradient(ellipse at 84% -10%,#1c3150 0,#0b1220 52%);color:var(--ink)}body[data-theme="dark"] .tools button,body[data-theme="dark"] .box,body[data-theme="dark"] .card,body[data-theme="dark"] .step,body[data-theme="dark"] .sample,body[data-theme="dark"] .criterion{background:#111c2e;color:var(--ink)}body[data-theme="dark"] .callout{background:#10262e;color:#cde9eb;border-color:#31545d}body[data-theme="dark"] .safety{background:#302515;color:#f3d8aa;border-color:#715323}body[data-theme="dark"] .end{background:#111e32}
+    @media(max-width:700px){.diagram{grid-template-columns:1fr}.arrow{justify-self:center;transform:rotate(90deg)}.cards,.criteria{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}@media(max-width:480px){.hero{padding:27px 20px}.steps{grid-template-columns:1fr}.top{align-items:flex-start}.tools{flex-wrap:wrap;justify-content:flex-end}}
+    @media print{body,body[data-theme="dark"]{background:#fff!important;color:#111!important;--ink:#111;--muted:#415166;--card:#fff;--line:#b9c4d0}.page{max-width:none;padding:0}.tools{display:none}.hero{background:#edf3fa!important;color:#12233b;box-shadow:none;border:1px solid #b9c4d0}.hero p,.kicker,.chips span{color:#334b67}.chips span{border-color:#b9c4d0;background:#fff}.box,.card,.step,.sample,.criterion,.callout,.safety{break-inside:avoid;box-shadow:none}.end{background:#edf3fa!important;color:#12233b}.end p{color:#334b67}}
+  </style>
+</head>
+<body data-theme="light">
+  <main class="page">
+    <div class="top"><div class="brand">数字信号处理 · 课程项目</div><div class="tools"><button id="theme" type="button">深色模式</button><button onclick="window.print()" type="button">打印 / 导出 PDF</button></div></div>
+    <header class="hero">
+      <div class="kicker">AI + DSP COURSE PROJECT · WEB SIGNAL ANALYZER AGENT</div>
+      <h1>AI+DSP 课程项目<br>Web 信号分析 Agent</h1>
+      <p>用户提出信号分析需求，Agent 把需求变成 DSP 任务，并在网页分析器中运行、显示和验证结果。网页提供清晰的程序接口，让 Agent 直接提交任务，不必依赖鼠标逐项点击复杂软件。</p>
+      <div class="chips"><span>个人持续项目</span><span>本地 Web 应用</span><span>DSP：滤波 / FFT / 特征</span><span>模型可插拔，不绑定厂商</span></div>
+    </header>
+    <div class="callout"><strong>从前两章开始：</strong>可先看<a href="../参考案例/index.html">离散信号分析 Agent 小样例</a>，它用“需求 → 任务 JSON → 卷积 → 波形”演示最小闭环；后续再按课程进度加入频谱、滤波等功能。</div>
+
+    <section class="section">
+      <h2>任务说明</h2>
+      <p class="intro">开发一个轻量 Web Signal Analyzer，并在它上面实现一个 DSP Agent。网页负责导入或生成信号、显示波形和频谱、运行基础算法；Agent 接收一句用户需求，检查采样信息和可用功能，形成任务配置并调用分析器。模型层采用可插拔设计，可切换不同厂商的模型服务；也保留规则模式，方便离线测试。每位同学都要完成，并按周提交迭代版本；项目过程可结合课程安排纳入课堂表现、课程作业或综合实验评价。</p>
+      <div class="callout"><strong>本题不要求重做 MATLAB Signal Analyzer，也不绑定 Codex 或某一家模型。</strong>只实现一个小而清楚的分析器子集，并为 Agent 提供稳定的 JSON / JavaScript 调用接口。不同模型都应输出同一种任务格式，最后由确定性规则检查后再执行 DSP。</div>
+    </section>
+
+    <section class="section">
+      <h2>Agent 怎么工作</h2>
+      <div class="diagram" role="img" aria-label="用户需求经Agent转换为JSON任务，由Web Signal Analyzer处理并返回结果">
+        <div class="box"><b>用户说需求</b><p>“估计这段信号的主频和幅值，再做平滑滤波。”</p></div><div class="arrow">→</div>
+        <div class="box"><b>Agent 生成任务</b><p>检查采样率、数据长度，组织成 JSON 操作序列。</p></div><div class="arrow">→</div>
+        <div class="box"><b>Web 分析器执行</b><p>运行 FFT / 滤波，显示波形、频谱和关键数值。</p></div>
+      </div>
+      <div class="sample"><strong>调用接口示意</strong><p><code>runAnalysis({"actions":["estimate_frequency","lowpass"],"sampleRate":1000})</code></p><p>接口可实现为页面内 JavaScript 函数，或本机服务的 HTTP API；学生可选一种。</p></div>
+    </section>
+
+    <section class="section">
+      <h2>最低完成要求</h2>
+      <div class="cards">
+        <article class="card"><h3>Web 分析器</h3><ul><li>能生成测试信号或导入 CSV。</li><li>显示时域波形和频域结果。</li><li>至少实现一种 DSP 算法：滤波、幅值 / 频率估计或简单特征提取。</li></ul></article>
+        <article class="card"><h3>Agent</h3><ul><li>把一条自然语言或表单需求变成结构化任务。</li><li>调用网页分析器并显示可解释结果。</li><li>遇到缺少采样率、数据不够或不支持的算法时，指出问题，不猜结果。</li></ul></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>多模型接入怎么做</h2>
+      <div class="cards">
+        <article class="card"><h3>统一适配接口</h3><p>定义统一的模型调用入口，例如“发送用户需求，返回 DSP 任务 JSON”。每家服务的请求格式差异留在各自适配器里，不改变分析器和 DSP 代码。</p></article>
+        <article class="card"><h3>可以切换与回退</h3><p>界面或配置中可选择模型后端；模型不可用时能切回规则模式或模拟响应。核心演示至少跑通一种模型，并展示第二种适配器或可替换后端。</p></article>
+        <article class="card"><h3>统一校验任务</h3><p>不论模型来自哪家，都必须输出规定字段；先检查数据、采样率、算法白名单和参数范围，再执行任务。</p></article>
+        <article class="card"><h3>保护密钥</h3><p>真实 API 密钥放在本机后端或环境变量中，不写进网页源码、提交仓库或展示给用户。</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>实施四步</h2>
+      <div class="steps">
+        <article class="step"><b>准备数据</b><p>生成正弦、含噪信号，或导入一段已有数据。</p></article>
+        <article class="step"><b>做分析页面</b><p>实现波形、频谱和至少一个 DSP 操作。</p></article>
+        <article class="step"><b>连接 Agent</b><p>将请求转换为任务 JSON，调用分析器接口。</p></article>
+        <article class="step"><b>验证边界</b><p>演示一个成功任务和一个应当追问 / 拒绝的任务。</p></article>
+      </div>
+      <div class="sample"><strong>可选扩展：连接 Target</strong><p>先完成本地 Web Agent；之后可让树莓派或 ESP32 把数据传入网页。常规树莓派需外接采集设备；ESP32-S3 可作为低压采样与显示目标，但要实测 ADC 采样能力。电子墨水屏适合显示分析摘要，不适合连续波形刷新。</p></div>
+    </section>
+
+    <section class="section">
+      <h2>每周提交与课堂交流</h2>
+      <div class="cards">
+        <article class="card"><h3>每周三晚上</h3><p>提交当周最新版，包括可运行页面 / 程序，以及本周完成内容和遇到的问题。</p></article>
+        <article class="card"><h3>每周四课堂</h3><p>教师从阶段成果中选取部分项目，请同学介绍实现思路并开展课堂交流。项目持续迭代，不要求第一周就完成全部功能。</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>提交与验收</h2>
+      <div class="criteria">
+        <div class="criterion"><b>可运行：</b>网页能导入 / 生成信号并完成分析。</div>
+        <div class="criterion"><b>有 DSP：</b>至少一种算法有测试信号和验证结果。</div>
+        <div class="criterion"><b>可调用：</b>Agent 通过结构化接口发起任务，不依赖脆弱的鼠标坐标自动化。</div>
+        <div class="criterion"><b>可换模型：</b>模型接入经过适配，切换后仍输出同一任务结构；可用规则模式做离线回退。</div>
+        <div class="criterion"><b>懂边界：</b>数据条件不足时能解释原因或请求补充信息。</div>
+      </div>
+      <p class="sources">MATLAB 可作为参考工具：Signal Analyzer 支持通过 <code>signalAnalyzer(sig)</code> 导入并显示信号，也能生成可复用的 MATLAB 分析脚本；本题用它核对算法结果，不要求 Agent 模拟鼠标操作整个 MATLAB 界面。<a href="https://www.mathworks.com/help/signal/ref/signalanalyzer-app.html" target="_blank" rel="noreferrer">MathWorks Signal Analyzer 文档</a> · <a href="https://www.mathworks.com/help/signal/ug/tips-and-limitations.html" target="_blank" rel="noreferrer">脚本生成与自动化说明</a></p>
+    </section>
+
+    <div class="safety"><strong>范围与安全：</strong>基础版使用仿真信号或离线文件；如扩展硬件，只接教师确认的安全低压信号。不要把市电直接接到开发板。Web 分析器是教学原型，不宣称等同专业测量仪器。</div>
+    <div class="end"><strong>为什么先做 Web 版和多模型接口？</strong><p>Agent 通过明确接口调用分析功能；模型厂商可以替换，DSP 任务格式和执行规则保持稳定。MATLAB 继续承担算法参考与交叉验证；后续接入板卡或工业计算机，也不必绑定某个模型或推翻任务格式。</p></div>
+    <footer><span>AI+DSP 课程项目任务书（个人迭代版）</span><span>可离线 / 本地运行 · 可打印导出 PDF</span></footer>
+  </main>
+  <script>
+    const themeButton=document.getElementById('theme');
+    function setTheme(theme,save=true){const dark=theme==='dark';document.body.dataset.theme=dark?'dark':'light';themeButton.textContent=dark?'浅色模式':'深色模式';document.querySelector('meta[name="theme-color"]').content=dark?'#0b1220':'#f3f6fb';if(save){try{localStorage.setItem('dspWebAgentTheme',theme)}catch(_){}}}
+    try{setTheme(localStorage.getItem('dspWebAgentTheme')||'light',false)}catch(_){setTheme('light',false)}
+    themeButton.addEventListener('click',()=>setTheme(document.body.dataset.theme==='dark'?'light':'dark'));
+  </script>
+</body>
+</html>

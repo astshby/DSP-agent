@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f3f6fb">
+<title>第一、二章小样例｜离散信号分析 Agent</title>
+<style>
+:root{color-scheme:light;--bg:#edf1f6;--ink:#1b2a3c;--muted:#718096;--line:#e0e6ee;--card:#fff;--blue:#315fc0;--teal:#07827f;--orange:#b75c22;--nav:#17263b;--shadow:0 2px 10px #1a35510b}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{background:var(--bg);color:var(--ink);font:14px/1.5 "Segoe UI","Microsoft YaHei",system-ui,sans-serif}.wrap{height:100vh;min-height:0;padding:0 18px 10px;display:flex;flex-direction:column}.top{height:48px;flex:none;margin:0 -18px;padding:0 20px;background:var(--nav);color:#d7e2f0;display:flex;align-items:center;justify-content:space-between;font-size:12px}.brand{display:flex;gap:10px;align-items:center}.appicon{display:grid;place-items:center;width:25px;height:25px;background:#2d6a91;border-radius:7px;color:white;font-weight:900}.tag{font-weight:750;letter-spacing:.02em}.topright{display:flex;align-items:center;gap:14px}.live{display:flex;align-items:center;gap:6px;color:#b9d6cc}.live i{width:7px;height:7px;background:#42bb85;border-radius:50%}.hero{flex:none;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:70px;padding:7px 3px 8px}.hero small{color:var(--blue);font-weight:800;letter-spacing:.1em;font-size:9px}.hero h1{font-size:18px;line-height:1.2;margin:2px 0}.hero p{max-width:720px;margin:2px 0 0;color:var(--muted);font-size:11px}.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.chips span{border:1px solid #d6e0eb;border-radius:30px;padding:3px 8px;font-size:9px;color:#50637c;background:#fff;white-space:nowrap}.grid{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,300px) minmax(400px,1fr) minmax(275px,320px);gap:10px;align-items:stretch}.panel,.plotcard,.concept{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}.panel{padding:13px;min-height:0;overflow:auto}.panel h2,.plotcard h2{font-size:13px;margin:0 0 3px}.sub{color:var(--muted);font-size:10px;margin:0 0 9px}.label{display:block;font-size:10px;font-weight:750;margin:8px 0 3px}.pair{display:grid;grid-template-columns:minmax(0,1fr) 78px;gap:7px}input,textarea,select{width:100%;border:1px solid #d8e0ea;background:#fbfcfe;color:var(--ink);border-radius:7px;padding:7px 8px;font:11px/1.35 "Segoe UI","Microsoft YaHei",system-ui,sans-serif;outline:none}input:focus,textarea:focus{border-color:#7d9bd7;box-shadow:0 0 0 3px #315fc016}textarea{min-height:62px;resize:vertical}.hint{font-size:9px;color:var(--muted);margin:3px 0}.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}button{border:0;border-radius:7px;padding:7px 9px;background:var(--blue);color:white;font-weight:750;cursor:pointer;font:inherit;font-size:10px}button:first-child{grid-column:1/-1;padding:8px}button.secondary{background:#edf2fa;color:#2b4c82}button:hover{filter:brightness(.97)}.status{margin-top:8px;border-radius:7px;background:#eef8f6;color:#245c57;padding:7px 9px;font-size:10px}.status.warn{background:#fff5e8;color:#805022}.notice{font-size:9px;color:#78542b;background:#fff8ed;border:1px solid #f0dfc4;padding:6px 8px;border-radius:7px;margin-top:7px}.stage{display:grid;grid-template-rows:minmax(190px,1.15fr) minmax(125px,.8fr) auto;gap:8px;min-width:0;min-height:0}.plotcard{padding:10px 12px;min-width:0;min-height:0;overflow:hidden}.plothead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.plothead span{font-size:9px;color:var(--muted)}svg{display:block;width:100%;height:calc(100% - 34px);min-height:95px;overflow:visible}.plotfoot{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:9px;gap:10px}.signals{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;min-height:0}.signals .plotcard{display:flex;flex-direction:column}.signals svg{height:100%;min-height:80px}.signals .caption{flex:none}.agent{display:grid;grid-template-rows:auto minmax(130px,1fr) auto;gap:8px;min-width:0;min-height:0;overflow:auto}.agent .plotcard{padding:11px}.agent ol{padding-left:17px;margin:7px 0;color:#4c5d72;font-size:10px}.agent li+li{margin-top:4px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#152238;color:#d8e6fa;border-radius:7px;padding:9px;margin:7px 0 0;font-size:9px;line-height:1.45;max-height:none;height:calc(100% - 27px);min-height:100px;overflow:auto}.agentformula{border:1px solid var(--line);border-radius:8px;padding:8px;background:#f8fafd}.math{font-family:Cambria,"Times New Roman",serif;color:#173f82;font-size:14px}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:9px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:3px}.concept{flex:none;margin-top:8px;padding:7px 10px}.concept h2{font-size:10px;margin:0 0 5px}.conceptgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.concept article{border:1px solid var(--line);border-radius:7px;padding:5px 8px}.concept b{font-size:9px;color:var(--blue)}.concept p{margin:2px 0 0;font-size:8px;line-height:1.3;color:var(--muted)}.foot{display:none}.caption{font-size:9px;color:var(--muted);margin:3px 0 0}
+@media(max-width:1100px){body{overflow:auto}.wrap{height:auto;min-height:100vh}.grid{flex:none;grid-template-columns:265px minmax(0,1fr);min-height:560px}.agent{grid-column:1/-1;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto;overflow:visible}.agent .plotcard{min-width:0}.stage{grid-template-rows:300px 190px auto}.concept{margin-bottom:8px}}
+@media(max-width:760px){.wrap{padding:0 12px 14px}.top{margin:0 -12px;padding:0 14px}.hero{align-items:flex-start;flex-direction:column;gap:7px}.chips{justify-content:flex-start}.grid{grid-template-columns:1fr;min-height:0}.panel{overflow:visible}.stage{grid-template-rows:290px auto auto}.agent{grid-column:auto;grid-template-columns:1fr}.signals{grid-template-columns:1fr 1fr}.conceptgrid{grid-template-columns:1fr}.concept p{font-size:10px}}
+@media(max-width:480px){.signals{grid-template-columns:1fr}.topright span:not(.live){display:none}.hero h1{font-size:18px}.stage{grid-template-rows:270px auto auto}.signals svg{height:125px}}
+@media(max-height:690px) and (min-width:1101px){.hero{min-height:58px}.hero p{font-size:10px}.grid{gap:7px}.panel{padding:10px}.stage{grid-template-rows:minmax(155px,1.1fr) minmax(105px,.8fr) auto;gap:6px}.signals{gap:6px}.agent{gap:6px}.concept{margin-top:6px;padding:5px 8px}.concept p{font-size:7px}}
+/* Readability pass: preserve the compact one-screen workspace while bringing labels back to classroom size. */
+.top{font-size:13px}.appicon{font-size:15px}.hero small{font-size:10px}.hero h1{font-size:21px}.hero p{font-size:13px;line-height:1.45}.chips span{font-size:11px;padding:4px 9px}.panel h2,.plotcard h2{font-size:15px}.sub{font-size:12px;line-height:1.45}.label{font-size:12px;margin-top:9px}.pair{grid-template-columns:minmax(0,1fr) 82px}input,textarea,select{font-size:13px;padding:8px 9px}textarea{min-height:68px}.hint{font-size:11px}.btnrow button{font-size:12px;padding:8px 10px}.status{font-size:12px;line-height:1.45}.notice{font-size:11px;line-height:1.4}.plothead span{font-size:11px}.plotfoot{font-size:11px}.signals .caption{font-size:11px}.agent ol{font-size:12px;line-height:1.48}.agent li+li{margin-top:5px}pre{font-size:11px;line-height:1.55}.math{font-size:16px}.legend{font-size:11px}.caption{font-size:11px}.concept h2{font-size:12px}.concept b{font-size:11px}.concept p{font-size:10px;line-height:1.4}
+@media(max-height:690px) and (min-width:1101px){.hero h1{font-size:19px}.hero p{font-size:11px}.panel h2,.plotcard h2{font-size:14px}.sub{font-size:11px}.concept p{font-size:9px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><div class="brand"><span class="appicon">∿</span><span class="tag">DSP Agent Studio</span><span>／课程项目参考样例</span></div><div class="topright"><span>Chapter 01—02</span><span class="live"><i></i>离线工作台</span></div></div>
+  <header class="hero">
+    <div><small>DISCRETE-TIME SIGNALS & SYSTEMS</small><h1>把一句话变成一次卷积实验</h1><p>需求由 Agent 整理成任务 JSON，分析器按卷积定义计算并显示输入、系统和输出。先完成第一、二章的最小闭环。</p></div>
+    <div class="chips"><span>x[n] 离散序列</span><span>h[n] LTI 系统</span><span>y[n] = x[n] * h[n]</span></div>
+  </header>
+  <div class="grid">
+    <section class="panel">
+      <h2>① 提出需求并设置序列</h2>
+      <p class="sub">可以改一句话，也可以直接改序列和起始下标。</p>
+      <label class="label" for="request">用户需求</label>
+      <textarea id="request">请计算输入 x[n] = [1, 2, 1] 与系统 h[n] = [1, -0.5] 的卷积，并画出输入和输出。</textarea>
+      <div class="pair">
+        <div><label class="label" for="xvals">输入 x[n]（逗号分隔）</label><input id="xvals" value="1, 2, 1" inputmode="decimal"></div>
+        <div><label class="label" for="xstart">首项下标 n₀</label><input id="xstart" type="number" value="-1"></div>
+      </div>
+      <div class="pair">
+        <div><label class="label" for="hvals">单位样值响应 h[n]</label><input id="hvals" value="1, -0.5" inputmode="decimal"></div>
+        <div><label class="label" for="hstart">首项下标 n₀</label><input id="hstart" type="number" value="0"></div>
+      </div>
+      <p class="hint">示例序列：x[-1…1] = [1, 2, 1]，h[0…1] = [1, −0.5]</p>
+      <div class="btnrow"><button id="run">解析任务并运行</button><button class="secondary" id="example">恢复示例</button><button class="secondary" id="copy">复制任务 JSON</button></div>
+      <div id="status" class="status" role="status">等待运行。此页用规则解析模拟 Agent，结果可重复、便于检查。</div>
+      <div class="notice">能力边界演示：如果需求要求 FFT / 频谱，本样例会说明当前单元尚未实现，不会伪装成已经分析。</div>
+    </section>
+    <section class="stage">
+      <article class="plotcard"><div class="plothead"><h2>③ 系统输出 · y[n]</h2><span id="resultMeta">运行后显示</span></div><svg id="plotY" viewBox="0 0 760 220" aria-label="卷积输出离散序列"></svg><div class="plotfoot"><span>离散时间 n</span><span class="math" id="equation">y[n] = x[n] * h[n]</span></div></article>
+      <div class="signals">
+        <article class="plotcard"><div class="plothead"><h2>输入 · x[n]</h2><span>蓝色</span></div><svg id="plotX" viewBox="0 0 360 145" aria-label="输入信号"></svg><p class="caption">输入离散序列</p></article>
+        <article class="plotcard"><div class="plothead"><h2>系统 · h[n]</h2><span>青色</span></div><svg id="plotH" viewBox="0 0 360 145" aria-label="单位样值响应"></svg><p class="caption">单位样值响应</p></article>
+      </div>
+      <article class="plotcard"><div class="plothead"><h2>分析结果</h2><span>卷积和的计算说明</span></div><p class="sub" id="calculation" style="margin:9px 0 0">每个输出样值由输入序列与系统单位样值响应按定义求和。</p></article>
+    </section>
+    <aside class="agent">
+      <article class="plotcard"><div class="plothead"><h2>② Agent 任务理解</h2><span>需求 → 结构化描述</span></div><ol id="steps"><li>等待读取需求和序列。</li></ol></article>
+      <article class="plotcard"><div class="plothead"><h2>任务 JSON</h2><span>分析器接口</span></div><pre id="json">运行后生成任务 JSON</pre></article>
+      <article class="plotcard"><div class="plothead"><h2>④ DSP 执行依据</h2><span>确定性计算</span></div><div class="agentformula"><div class="math">y[n] = ∑<sub>k</sub> x[k] h[n−k]</div><div class="legend"><span><i class="dot" style="background:#315fc0"></i>x[n]</span><span><i class="dot" style="background:#07827f"></i>h[n]</span><span><i class="dot" style="background:#b75c22"></i>y[n]</span></div></div><p class="caption">Agent 组织任务；分析器负责按定义计算。</p></article>
+    </aside>
+  </div>
+  <section class="concept">
+    <h2>这个小样例希望学生看懂的三件事</h2>
+    <div class="conceptgrid">
+      <article><b>Agent 不等于 DSP 算法</b><p>Agent 负责理解、补充和组织需求；卷积仍由明确、可验证的程序执行。</p></article>
+      <article><b>JSON 是中间契约</b><p>自然语言可以变化，但传给分析器的操作、序列和下标要清楚且可检查。</p></article>
+      <article><b>先做窄任务，再逐章扩展</b><p>这里仅做离散序列与卷积。后续学到频域分析、滤波后，再把对应操作加入白名单。</p></article>
+    </div>
+    <p class="foot">教学提示：这是一个不调用外部模型的“规则版 Agent 原型”。学生可先照着完成最小闭环，再把规则解析替换为自己选择的大模型适配器；算法执行和任务校验仍应留在本地程序中。</p>
+  </section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let lastTask=null;
+function readSeq(id){const raw=$(id).value.trim();if(!raw)throw new Error('序列不能为空。');const a=raw.split(/[，,\s]+/).filter(Boolean).map(Number);if(a.some(v=>!Number.isFinite(v)))throw new Error('序列中有无法识别的数值。');return a;}
+function svgPlot(el,values,n0,color,compact=false){const w=compact?360:760,h=compact?145:165,pad={l:36,r:18,t:14,b:29},base=h/2+7,amp=h*.34,max=Math.max(1,...values.map(v=>Math.abs(v))),inner=w-pad.l-pad.r;const x=i=>pad.l+(values.length===1?inner/2:i*inner/(values.length-1));let s=`<line x1="${pad.l}" y1="${base}" x2="${w-pad.r}" y2="${base}" stroke="#aebac9" stroke-width="1.2"/>`;
+values.forEach((v,i)=>{const xx=x(i),yy=base-v/max*amp;s+=`<line x1="${xx}" y1="${base}" x2="${xx}" y2="${yy}" stroke="${color}" stroke-width="2.8"/><circle cx="${xx}" cy="${yy}" r="4.5" fill="${color}"/><text x="${xx}" y="${h-6}" text-anchor="middle" font-size="12" fill="#56677e">${n0+i}</text><text x="${xx}" y="${yy-8}" text-anchor="middle" font-size="12" font-weight="600" fill="#34465d">${Number(v.toPrecision(4))}</text>`});el.innerHTML=s;}
+function run(){try{const request=$('request').value.trim(),x=readSeq('xvals'),h=readSeq('hvals'),x0=Number($('xstart').value),h0=Number($('hstart').value);if(!Number.isInteger(x0)||!Number.isInteger(h0))throw new Error('序列起始下标必须是整数。');if(!request)throw new Error('请先写出用户需求。');const needsSpectrum=/频谱|FFT|傅里叶变换|频域/i.test(request);if(needsSpectrum){$('status').className='status warn';$('status').textContent='当前样例只实现时域卷积。频谱 / FFT 超出本页已实现能力；可以先完成后续章节学习，再扩展该操作。';$('steps').innerHTML='<li>识别到频谱 / FFT 请求。</li><li>检查能力白名单：当前版本没有该操作。</li><li>停止执行并明确告知边界，不生成虚假结果。</li>';$('json').textContent=JSON.stringify({status:'unsupported',requested:'spectrum_or_fft',available:['linear_convolution']},null,2);return;}
+if(!/卷积|系统响应|输出序列|响应/.test(request))throw new Error('这个样例目前只识别“卷积 / 系统响应”任务。请修改需求，或从卷积开始。');
+const y=Array(x.length+h.length-1).fill(0);for(let i=0;i<x.length;i++)for(let j=0;j<h.length;j++)y[i+j]+=x[i]*h[j];const y0=x0+h0;lastTask={operation:'linear_convolution',x:{n0:x0,values:x},h:{n0:h0,values:h},output:{n0:y0,values:y}};
+$('steps').innerHTML=`<li>提取操作：<b>线性卷积</b>（输入通过 LTI 系统）。</li><li>读取 x[n]：起始下标 ${x0}，共 ${x.length} 个样值。</li><li>读取 h[n]：起始下标 ${h0}，共 ${h.length} 个样值。</li><li>校验输入通过后，调用分析器执行卷积。</li>`;$('json').textContent=JSON.stringify({operation:lastTask.operation,x:lastTask.x,h:lastTask.h},null,2);$('status').className='status';$('status').textContent='任务已校验并完成。卷积长度为 Nₓ + Nₕ − 1 = '+y.length+'，输出起始下标为 '+y0+'。';$('resultMeta').textContent=`n = ${y0}…${y0+y.length-1} · ${y.length} 个样值`;$('equation').textContent='y[n] = '+JSON.stringify(y.map(v=>Number(v.toPrecision(4))));$('calculation').textContent=`全卷积结果：y[${y0}…${y0+y.length-1}] = [${y.map(v=>Number(v.toPrecision(4))).join(', ')}]。起始下标相加，样值按卷积定义求和。`;svgPlot($('plotX'),x,x0,'#315fc0',true);svgPlot($('plotH'),h,h0,'#07827f',true);svgPlot($('plotY'),y,y0,'#b75c22',false);
+}catch(e){$('status').className='status warn';$('status').textContent=e.message;}}
+$('run').addEventListener('click',run);$('example').addEventListener('click',()=>{$('request').value='请计算输入 x[n] = [1, 2, 1] 与系统 h[n] = [1, -0.5] 的卷积，并画出输入和输出。';$('xvals').value='1, 2, 1';$('xstart').value='-1';$('hvals').value='1, -0.5';$('hstart').value='0';run();});$('copy').addEventListener('click',async()=>{if(!lastTask)run();if(!lastTask)return;try{await navigator.clipboard.writeText(JSON.stringify({operation:lastTask.operation,x:lastTask.x,h:lastTask.h},null,2));$('status').textContent='任务 JSON 已复制。';}catch(_){$('status').textContent='浏览器未授权剪贴板；请直接从右侧 JSON 框复制。';}});
+run();
+</script>
+</body>
+</html>
